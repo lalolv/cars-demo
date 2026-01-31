@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://bqtppgakp5jbj"]
+
+[ext_resource type="Script" uid="uid://btmhw51s38t1u" path="res://scripts/orbit_camera.gd" id="1_0wfyh"]
+[ext_resource type="Script" uid="uid://dgeb5lrfsme5v" path="res://scripts/rotating_stage.gd" id="2_sugp2"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sgp6g"]
+
+[sub_resource type="Sky" id="Sky_o5qli"]
+sky_material = SubResource("ProceduralSkyMaterial_sgp6g")
+
+[sub_resource type="Environment" id="Environment_0wfyh"]
+background_mode = 2
+background_color = Color(0.9274413, 0, 0.29856923, 1)
+background_energy_multiplier = 2.0
+sky = SubResource("Sky_o5qli")
+
+[sub_resource type="BoxMesh" id="BoxMesh_0wfyh"]
+
+[node name="Main" type="Node3D" unique_id=865511161]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=501142533]
+environment = SubResource("Environment_0wfyh")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=707622321]
+
+[node name="OrbitCamera" type="Camera3D" parent="." unique_id=791855750 node_paths=PackedStringArray("target")]
+current = true
+script = ExtResource("1_0wfyh")
+target = NodePath("../Stage")
+
+[node name="Stage" type="Node3D" parent="." unique_id=790330411]
+script = ExtResource("2_sugp2")
+
+[node name="CarMount" type="Node3D" parent="Stage" unique_id=1209937718]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Stage" unique_id=68346988]
+mesh = SubResource("BoxMesh_0wfyh")
+
+[node name="LightPillars" type="Node3D" parent="." unique_id=1915213956]
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=1862575285]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1563659224]
+
+[node name="MainUI" type="Control" parent="CanvasLayer" unique_id=2054373399]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
