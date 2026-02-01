@@ -1,16 +1,16 @@
 extends Camera3D
 
 @export var target: Node3D
-@export var distance: float = 8.0
-@export var min_distance: float = 4.0
-@export var max_distance: float = 15.0
+@export var distance: float = 4.0
+@export var min_distance: float = 2.5
+@export var max_distance: float = 9.0
 @export var rotation_speed: float = 0.5
 @export var zoom_speed: float = 0.02
 @export var min_pitch: float = 10.0
 @export var max_pitch: float = 60.0
 
-var _yaw: float = 0.0
-var _pitch: float = 45.0
+var _yaw: float = 35.0
+var _pitch: float = 25.0
 var _touch_positions: Dictionary = {}
 var _last_pinch_distance: float = 0.0
 
