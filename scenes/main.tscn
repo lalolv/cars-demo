@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://btmhw51s38t1u" path="res://scripts/orbit_camera.gd" id="1_0wfyh"]
 [ext_resource type="Script" uid="uid://dgeb5lrfsme5v" path="res://scripts/rotating_stage.gd" id="2_sugp2"]
-[ext_resource type="PackedScene" uid="uid://dw0ugjbo2mmsk" path="res://assets/models/pony_cartoon/pony_cartoon.glb" id="3_sugp2"]
+[ext_resource type="PackedScene" uid="uid://747e0alo06xv" path="res://scenes/cars/pony_cartoon.tscn" id="3_sugp2"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sgp6g"]
 
@@ -15,6 +15,15 @@ background_color = Color(0.9274413, 0, 0.29856923, 1)
 background_energy_multiplier = 2.0
 sky = SubResource("Sky_o5qli")
 
+[sub_resource type="CylinderMesh" id="CylinderMesh_sugp2"]
+top_radius = 2.2
+bottom_radius = 2.5
+height = 0.15
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_jyhfs"]
+height = 0.15
+radius = 2.2
+
 [node name="Main" type="Node3D" unique_id=865511161]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=501142533]
@@ -26,14 +35,22 @@ environment = SubResource("Environment_0wfyh")
 current = true
 script = ExtResource("1_0wfyh")
 target = NodePath("../Stage")
-distance = 4.0
 
 [node name="Stage" type="Node3D" parent="." unique_id=790330411]
 script = ExtResource("2_sugp2")
 
 [node name="CarMount" type="Node3D" parent="Stage" unique_id=1209937718]
 
-[node name="Sketchfab_Scene" parent="Stage/CarMount" unique_id=860650203 instance=ExtResource("3_sugp2")]
+[node name="CarBody" parent="Stage/CarMount" unique_id=1437823335 instance=ExtResource("3_sugp2")]
+
+[node name="Platform" type="MeshInstance3D" parent="Stage" unique_id=1911327015]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08393791, 0)
+mesh = SubResource("CylinderMesh_sugp2")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Stage/Platform" unique_id=1767355441]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Stage/Platform/StaticBody3D" unique_id=1282772031]
+shape = SubResource("CylinderShape3D_jyhfs")
 
 [node name="LightPillars" type="Node3D" parent="." unique_id=1915213956]
 
