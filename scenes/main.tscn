@@ -3,6 +3,10 @@
 [ext_resource type="Script" uid="uid://btmhw51s38t1u" path="res://scripts/orbit_camera.gd" id="1_0wfyh"]
 [ext_resource type="Script" uid="uid://dgeb5lrfsme5v" path="res://scripts/rotating_stage.gd" id="2_sugp2"]
 [ext_resource type="PackedScene" uid="uid://747e0alo06xv" path="res://scenes/cars/pony_cartoon.tscn" id="3_sugp2"]
+[ext_resource type="Script" uid="uid://b3j7huaktfvkn" path="res://scripts/light_pillars_layout.gd" id="4_tefeu"]
+[ext_resource type="PackedScene" uid="uid://bgny7xlxsbxxx" path="res://scenes/light_pillar.tscn" id="5_o6xl0"]
+[ext_resource type="AudioStream" uid="uid://bcq8fwxdxv31y" path="res://assets/music/sleep-talking.ogg" id="6_o6xl0"]
+[ext_resource type="Script" uid="uid://b8u54pm62tda4" path="res://scripts/audio_visualizer.gd" id="6_tipki"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sgp6g"]
 
@@ -53,8 +57,36 @@ mesh = SubResource("CylinderMesh_sugp2")
 shape = SubResource("CylinderShape3D_jyhfs")
 
 [node name="LightPillars" type="Node3D" parent="." unique_id=1915213956]
+script = ExtResource("4_tefeu")
+pillar_scene = ExtResource("5_o6xl0")
+
+[node name="LightPillar1" parent="LightPillars" unique_id=584079878 instance=ExtResource("5_o6xl0")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3)
+
+[node name="LightPillar2" parent="LightPillars" unique_id=184313158 instance=ExtResource("5_o6xl0")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.12, 0, 2.12)
+
+[node name="LightPillar3" parent="LightPillars" unique_id=1586644158 instance=ExtResource("5_o6xl0")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 0)
+
+[node name="LightPillar4" parent="LightPillars" unique_id=1292326224 instance=ExtResource("5_o6xl0")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.12, 0, -2.12)
+
+[node name="LightPillar5" parent="LightPillars" unique_id=1705183621 instance=ExtResource("5_o6xl0")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -3)
+
+[node name="LightPillar6" parent="LightPillars" unique_id=137722648 instance=ExtResource("5_o6xl0")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.12, 0, -2.12)
+
+[node name="LightPillar7" parent="LightPillars" unique_id=1491128925 instance=ExtResource("5_o6xl0")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, 0)
+
+[node name="LightPillar8" parent="LightPillars" unique_id=939562452 instance=ExtResource("5_o6xl0")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.12, 0, 2.12)
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=1862575285]
+stream = ExtResource("6_o6xl0")
+autoplay = true
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1563659224]
 
@@ -63,3 +95,7 @@ layout_mode = 3
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
+
+[node name="AudioVisualizer" type="Node" parent="." unique_id=261673062 node_paths=PackedStringArray("light_pillars")]
+script = ExtResource("6_tipki")
+light_pillars = [NodePath("../LightPillars/LightPillar1"), NodePath("../LightPillars/LightPillar2"), NodePath("../LightPillars/LightPillar3"), NodePath("../LightPillars/LightPillar4"), NodePath("../LightPillars/LightPillar5"), NodePath("../LightPillars/LightPillar6"), NodePath("../LightPillars/LightPillar7"), NodePath("../LightPillars/LightPillar8")]
