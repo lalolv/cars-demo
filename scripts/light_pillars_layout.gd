@@ -3,20 +3,40 @@ extends Node3D
 @export var pillar_scene: PackedScene
 @export var pillar_count: int = 8
 @export var radius: float = 3.0
+@export var arc_span_degrees: float = 180.0
+@export var arc_center_degrees: float = 180.0
 @export var y_offset: float = 0.0
 @export var spawn_if_missing: bool = true
+@export var place_behind_camera_on_ready: bool = true
+@export var camera_path: NodePath
 @export var uniform_base_height: float = 3.0
 @export var uniform_color_enabled: bool = false
 @export var uniform_color: Color = Color.CYAN
 
 var _generated_colors: Array[Color] = []
+var _camera: Camera3D
 
 func _ready() -> void:
 	if spawn_if_missing:
 		_ensure_pillar_count()
 
+	_camera = _resolve_camera()
+	if place_behind_camera_on_ready:
+		_set_arc_center_behind_camera()
 	_layout_children()
 	_apply_visual_settings()
+
+func _set_arc_center_behind_camera() -> void:
+	if not _camera:
+		return
+
+	var to_camera: Vector3 = _camera.global_position - global_position
+	to_camera.y = 0.0
+	if to_camera.length_squared() < 0.0001:
+		return
+
+	var cam_angle_deg: float = rad_to_deg(atan2(to_camera.x, to_camera.z))
+	arc_center_degrees = cam_angle_deg + 180.0
 
 func _ensure_pillar_count() -> void:
 	if not pillar_scene:
@@ -40,10 +60,12 @@ func _layout_children() -> void:
 		return
 
 	var count: int = min(pillar_count, pillars.size())
-	var step_deg: float = 360.0 / float(count)
+	var span: float = clamp(arc_span_degrees, 0.0, 360.0)
+	var start_deg: float = arc_center_degrees - span * 0.5
+	var step_deg: float = span / float(max(count - 1, 1))
 
 	for i in range(count):
-		var angle: float = deg_to_rad(step_deg * i)
+		var angle: float = deg_to_rad(start_deg + step_deg * i)
 		var x: float = sin(angle) * radius
 		var z: float = cos(angle) * radius
 
@@ -101,3 +123,15 @@ func _generate_random_colors(count: int) -> void:
 		var saturation: float = rng.randf_range(0.8, 1.0)
 		var value: float = rng.randf_range(0.65, 0.85)
 		_generated_colors.append(Color.from_hsv(hue, saturation, value, 1.0))
+
+func _resolve_camera() -> Camera3D:
+	if not camera_path.is_empty():
+		var path_camera := get_node_or_null(camera_path) as Camera3D
+		if path_camera:
+			return path_camera
+
+	var viewport_camera: Camera3D = get_viewport().get_camera_3d()
+	if viewport_camera:
+		return viewport_camera
+
+	return null

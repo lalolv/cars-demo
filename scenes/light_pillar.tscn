@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://dgpdldqeshr6s" path="res://scripts/light_pillar.gd" id="1_pimyf"]
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_8yy26"]
+lightmap_size_hint = Vector2i(5, 9)
 top_radius = 0.08
 bottom_radius = 0.08
 height = 1.0
