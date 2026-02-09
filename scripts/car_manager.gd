@@ -2,7 +2,7 @@ extends Node
 
 signal car_changed(car_name: String)
 
-const DEFAULT_CAR_SCENE: PackedScene = preload("res://scenes/cars/pony_cartoon.tscn")
+const DEFAULT_CAR_SCENE: PackedScene = preload("res://scenes/cars/1962_ferrari_250_gto.tscn")
 
 @export var stage: Node3D
 @export var car_scenes: Array[PackedScene] = []

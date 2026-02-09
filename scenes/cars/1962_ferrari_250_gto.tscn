@@ -1,0 +1,9 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/1962_ferrari_250_gto/1962_ferrari_250_gto.glb" id="1_f250g"]
+
+[node name="CarBody" type="RigidBody3D"]
+
+[node name="Model" parent="." instance=ExtResource("1_f250g")]
+
+[editable path="Model"]

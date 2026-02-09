@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" uid="uid://btmhw51s38t1u" path="res://scripts/orbit_camera.gd" id="1_0wfyh"]
 [ext_resource type="Script" uid="uid://dgeb5lrfsme5v" path="res://scripts/rotating_stage.gd" id="2_sugp2"]
-[ext_resource type="PackedScene" uid="uid://747e0alo06xv" path="res://scenes/cars/pony_cartoon.tscn" id="3_sugp2"]
 [ext_resource type="Script" uid="uid://b3j7huaktfvkn" path="res://scripts/light_pillars_layout.gd" id="4_tefeu"]
 [ext_resource type="PackedScene" uid="uid://bgny7xlxsbxxx" path="res://scenes/light_pillar.tscn" id="5_o6xl0"]
 [ext_resource type="AudioStream" uid="uid://bcq8fwxdxv31y" path="res://assets/music/sleep-talking.ogg" id="6_o6xl0"]
@@ -10,6 +9,8 @@
 [ext_resource type="Script" path="res://scripts/car_manager.gd" id="7_31jq3"]
 [ext_resource type="Script" path="res://scripts/music_player.gd" id="8_o3c81"]
 [ext_resource type="Script" path="res://scripts/main.gd" id="9_t14w1"]
+[ext_resource type="PackedScene" path="res://scenes/cars/1962_ferrari_250_gto.tscn" id="10_f250g"]
+[ext_resource type="PackedScene" path="res://scenes/cars/1985_toyota_sprinter_trueno_ae86.tscn" id="11_ae86x"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sgp6g"]
 
@@ -97,8 +98,8 @@ stream = ExtResource("6_o6xl0")
 
 [node name="CarManager" type="Node" parent="." unique_id=1903192842]
 script = ExtResource("7_31jq3")
-car_scenes = [ExtResource("3_sugp2")]
-car_names = Array[String](["Pony Cartoon"])
+car_scenes = [ExtResource("10_f250g"), ExtResource("11_ae86x")]
+car_names = Array[String](["1962 Ferrari 250 GTO", "1985 Toyota Sprinter Trueno AE86"])
 
 [node name="MusicPlayer" type="Node" parent="." unique_id=196202761 node_paths=PackedStringArray("audio_player")]
 script = ExtResource("8_o3c81")
