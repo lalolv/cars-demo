@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://drifh2eifr7up"
+path="res://.godot/imported/Showroom Overdrive.ogg-77c0b6729a211a424d8e0775ce754c2c.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/music/Showroom Overdrive.ogg"
+dest_files=["res://.godot/imported/Showroom Overdrive.ogg-77c0b6729a211a424d8e0775ce754c2c.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

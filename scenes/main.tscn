@@ -7,6 +7,9 @@
 [ext_resource type="PackedScene" uid="uid://bgny7xlxsbxxx" path="res://scenes/light_pillar.tscn" id="5_o6xl0"]
 [ext_resource type="AudioStream" uid="uid://bcq8fwxdxv31y" path="res://assets/music/sleep-talking.ogg" id="6_o6xl0"]
 [ext_resource type="Script" uid="uid://b8u54pm62tda4" path="res://scripts/audio_visualizer.gd" id="6_tipki"]
+[ext_resource type="Script" path="res://scripts/car_manager.gd" id="7_31jq3"]
+[ext_resource type="Script" path="res://scripts/music_player.gd" id="8_o3c81"]
+[ext_resource type="Script" path="res://scripts/main.gd" id="9_t14w1"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sgp6g"]
 
@@ -31,6 +34,7 @@ height = 0.15
 radius = 2.2
 
 [node name="Main" type="Node3D" unique_id=865511161]
+script = ExtResource("9_t14w1")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=501142533]
 environment = SubResource("Environment_0wfyh")
@@ -50,8 +54,6 @@ distance = 5.0
 script = ExtResource("2_sugp2")
 
 [node name="CarMount" type="Node3D" parent="Stage" unique_id=1209937718]
-
-[node name="CarBody" parent="Stage/CarMount" unique_id=1437823335 instance=ExtResource("3_sugp2")]
 
 [node name="Platform" type="MeshInstance3D" parent="Stage" unique_id=1911327015]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08393791, 0)
@@ -92,15 +94,48 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.12, 0, 2.12)
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=1862575285]
 stream = ExtResource("6_o6xl0")
-autoplay = true
+
+[node name="CarManager" type="Node" parent="." unique_id=1903192842]
+script = ExtResource("7_31jq3")
+car_scenes = [ExtResource("3_sugp2")]
+car_names = Array[String](["Pony Cartoon"])
+
+[node name="MusicPlayer" type="Node" parent="." unique_id=196202761 node_paths=PackedStringArray("audio_player")]
+script = ExtResource("8_o3c81")
+audio_player = NodePath("../AudioStreamPlayer")
+music_list = [ExtResource("6_o6xl0")]
+music_names = Array[String](["Sleep Talking"])
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1563659224]
 
 [node name="MainUI" type="Control" parent="CanvasLayer" unique_id=2054373399]
 layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TopBar" type="HBoxContainer" parent="CanvasLayer/MainUI" unique_id=1752097109]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 660.0
+offset_bottom = 68.0
+theme_override_constants/separation = 12
+
+[node name="PlayPauseButton" type="Button" parent="CanvasLayer/MainUI/TopBar" unique_id=759480709]
+custom_minimum_size = Vector2(120, 48)
+layout_mode = 2
+text = "Play"
+
+[node name="MusicSelector" type="OptionButton" parent="CanvasLayer/MainUI/TopBar" unique_id=1038104861]
+custom_minimum_size = Vector2(220, 48)
+layout_mode = 2
+
+[node name="CarSelector" type="OptionButton" parent="CanvasLayer/MainUI/TopBar" unique_id=1307564621]
+custom_minimum_size = Vector2(220, 48)
+layout_mode = 2
 
 [node name="AudioVisualizer" type="Node" parent="." unique_id=261673062 node_paths=PackedStringArray("light_pillars")]
 script = ExtResource("6_tipki")

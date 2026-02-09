@@ -6,6 +6,10 @@ extends Node3D
 var current_car: Node = null
 @onready var car_mount: Node3D = $CarMount
 
+func _ready() -> void:
+	if car_mount and car_mount.get_child_count() > 0:
+		current_car = car_mount.get_child(0)
+
 func _process(delta: float) -> void:
 	if auto_rotate:
 		rotate_y(deg_to_rad(rotation_speed * delta))
