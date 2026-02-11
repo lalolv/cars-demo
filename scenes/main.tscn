@@ -11,6 +11,7 @@
 [ext_resource type="Script" path="res://scripts/main.gd" id="9_t14w1"]
 [ext_resource type="PackedScene" path="res://scenes/cars/1962_ferrari_250_gto.tscn" id="10_f250g"]
 [ext_resource type="PackedScene" path="res://scenes/cars/1985_toyota_sprinter_trueno_ae86.tscn" id="11_ae86x"]
+[ext_resource type="Script" path="res://scripts/screen_slideshow.gd" id="12_screen"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sgp6g"]
 
@@ -34,6 +35,28 @@ height = 0.15
 height = 0.15
 radius = 2.2
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_stage"]
+albedo_color = Color(0.15294118, 0.1764706, 0.22745098, 1)
+metallic = 0.65
+roughness = 0.22
+
+[sub_resource type="QuadMesh" id="QuadMesh_screen"]
+size = Vector2(9.6, 5.4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_brand_wall"]
+size = Vector3(12, 6.5, 0.3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_spec_wall"]
+size = Vector3(4.8, 3.2, 0.22)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_brand_wall"]
+albedo_color = Color(0.08627451, 0.10980392, 0.14901961, 1)
+roughness = 0.72
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_spec_wall"]
+albedo_color = Color(0.13333334, 0.17254902, 0.23921569, 1)
+roughness = 0.58
+
 [node name="Main" type="Node3D" unique_id=865511161]
 script = ExtResource("9_t14w1")
 
@@ -49,7 +72,7 @@ shadow_enabled = true
 current = true
 script = ExtResource("1_0wfyh")
 target = NodePath("../Stage")
-distance = 5.0
+distance = 6.2
 
 [node name="Stage" type="Node3D" parent="." unique_id=790330411]
 script = ExtResource("2_sugp2")
@@ -59,6 +82,7 @@ script = ExtResource("2_sugp2")
 [node name="Platform" type="MeshInstance3D" parent="Stage" unique_id=1911327015]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08393791, 0)
 mesh = SubResource("CylinderMesh_sugp2")
+material_override = SubResource("StandardMaterial3D_stage")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Stage/Platform" unique_id=1767355441]
 
@@ -68,6 +92,50 @@ shape = SubResource("CylinderShape3D_jyhfs")
 [node name="LightPillars" type="Node3D" parent="." unique_id=1915213956]
 script = ExtResource("4_tefeu")
 pillar_scene = ExtResource("5_o6xl0")
+
+[node name="LightingRig" type="Node3D" parent="."]
+
+[node name="KeyLightLeft" type="OmniLight3D" parent="LightingRig"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, 3.8, 2.1)
+light_color = Color(1, 0.9529412, 0.84705883, 1)
+light_energy = 0.95
+omni_range = 10.0
+shadow_enabled = true
+
+[node name="KeyLightRight" type="OmniLight3D" parent="LightingRig"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2, 3.6, 1.8)
+light_color = Color(0.9254902, 0.9490196, 1, 1)
+light_energy = 0.85
+omni_range = 10.0
+
+[node name="RimLight" type="OmniLight3D" parent="LightingRig"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.0, -4.2)
+light_color = Color(0.5176471, 0.70980394, 1, 1)
+light_energy = 0.6
+omni_range = 12.0
+
+[node name="BackScreenRoot" type="Node3D" parent="."]
+
+[node name="MainScreen" type="MeshInstance3D" parent="BackScreenRoot"]
+transform = Transform3D(0.9781476, 0, 0.2079117, 0, 1, 0, -0.2079117, 0, 0.9781476, 0, 2.7, -13.0)
+mesh = SubResource("QuadMesh_screen")
+
+[node name="BrandWall" type="MeshInstance3D" parent="BackScreenRoot"]
+transform = Transform3D(0.9781476, 0, 0.2079117, 0, 1, 0, -0.2079117, 0, 0.9781476, 0, 2.7, -13.3)
+mesh = SubResource("BoxMesh_brand_wall")
+material_override = SubResource("StandardMaterial3D_brand_wall")
+
+[node name="SpecWall" type="MeshInstance3D" parent="BackScreenRoot"]
+transform = Transform3D(0.42261824, 0, -0.9063078, 0, 1, 0, 0.9063078, 0, 0.42261824, 5.6, 1.7, -7.8)
+mesh = SubResource("BoxMesh_spec_wall")
+material_override = SubResource("StandardMaterial3D_spec_wall")
+
+[node name="ScreenSlideshow" type="Node" parent="BackScreenRoot" node_paths=PackedStringArray("screen_mesh_path")]
+script = ExtResource("12_screen")
+screen_mesh_path = NodePath("../MainScreen")
+seconds_per_slide = 6.5
+fade_in_duration = 0.5
+emission_energy = 1.4
 
 [node name="LightPillar1" parent="LightPillars" unique_id=584079878 instance=ExtResource("5_o6xl0")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3)
@@ -137,6 +205,19 @@ layout_mode = 2
 [node name="CarSelector" type="OptionButton" parent="CanvasLayer/MainUI/TopBar" unique_id=1307564621]
 custom_minimum_size = Vector2(220, 48)
 layout_mode = 2
+
+[node name="ScreenToggleButton" type="Button" parent="CanvasLayer/MainUI/TopBar"]
+custom_minimum_size = Vector2(120, 48)
+layout_mode = 2
+text = "Screen On"
+
+[node name="SlideIntervalSlider" type="HSlider" parent="CanvasLayer/MainUI/TopBar"]
+custom_minimum_size = Vector2(180, 48)
+layout_mode = 2
+min_value = 2.0
+max_value = 12.0
+step = 0.5
+value = 6.5
 
 [node name="AudioVisualizer" type="Node" parent="." unique_id=261673062 node_paths=PackedStringArray("light_pillars")]
 script = ExtResource("6_tipki")

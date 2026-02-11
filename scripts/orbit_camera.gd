@@ -9,8 +9,8 @@ extends Camera3D
 @export var min_pitch: float = 10.0
 @export var max_pitch: float = 60.0
 
-var _yaw: float = 35.0
-var _pitch: float = 25.0
+var _yaw: float = 24.0
+var _pitch: float = 23.0
 var _touch_positions: Dictionary = {}
 var _last_pinch_distance: float = 0.0
 

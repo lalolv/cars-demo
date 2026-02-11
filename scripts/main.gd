@@ -5,12 +5,17 @@ extends Node3D
 @onready var play_pause_button: Button = $CanvasLayer/MainUI/TopBar/PlayPauseButton
 @onready var music_selector: OptionButton = $CanvasLayer/MainUI/TopBar/MusicSelector
 @onready var car_selector: OptionButton = $CanvasLayer/MainUI/TopBar/CarSelector
+@onready var screen_toggle_button: Button = $CanvasLayer/MainUI/TopBar/ScreenToggleButton
+@onready var slide_interval_slider: HSlider = $CanvasLayer/MainUI/TopBar/SlideIntervalSlider
+@onready var back_screen_root: Node3D = $BackScreenRoot
+@onready var screen_slideshow: Node = $BackScreenRoot/ScreenSlideshow
 
 func _ready() -> void:
 	_setup_selectors()
 	_connect_ui_signals()
 	_connect_manager_signals()
 	_sync_selector_state()
+	_setup_showroom_controls()
 	_refresh_play_pause_text()
 
 func _setup_selectors() -> void:
@@ -37,6 +42,12 @@ func _connect_ui_signals() -> void:
 
 	if not music_selector.item_selected.is_connected(_on_music_selected):
 		music_selector.item_selected.connect(_on_music_selected)
+
+	if screen_toggle_button and not screen_toggle_button.pressed.is_connected(_on_screen_toggle_pressed):
+		screen_toggle_button.pressed.connect(_on_screen_toggle_pressed)
+
+	if slide_interval_slider and not slide_interval_slider.value_changed.is_connected(_on_slide_interval_changed):
+		slide_interval_slider.value_changed.connect(_on_slide_interval_changed)
 
 func _connect_manager_signals() -> void:
 	if car_manager.has_signal("car_changed") and not car_manager.is_connected("car_changed", _on_car_changed):
@@ -84,6 +95,44 @@ func _refresh_play_pause_text() -> void:
 	if audio_player and audio_player.playing and not audio_player.stream_paused:
 		button_text = "Pause"
 	play_pause_button.text = button_text
+
+func _setup_showroom_controls() -> void:
+	if not screen_slideshow:
+		return
+
+	var interval_value: float = screen_slideshow.get("seconds_per_slide") as float
+	if slide_interval_slider:
+		slide_interval_slider.value = maxf(slide_interval_slider.min_value, interval_value)
+
+	var is_enabled: bool = screen_slideshow.get("screen_enabled") as bool
+	if back_screen_root:
+		back_screen_root.visible = is_enabled
+	_refresh_screen_toggle_text(is_enabled)
+
+func _on_screen_toggle_pressed() -> void:
+	if not screen_slideshow:
+		return
+
+	var is_enabled: bool = screen_slideshow.get("screen_enabled") as bool
+	var next_enabled: bool = not is_enabled
+	if screen_slideshow.has_method("set_screen_enabled"):
+		screen_slideshow.call("set_screen_enabled", next_enabled)
+
+	if back_screen_root:
+		back_screen_root.visible = next_enabled
+	_refresh_screen_toggle_text(next_enabled)
+
+func _on_slide_interval_changed(value: float) -> void:
+	if not screen_slideshow:
+		return
+
+	if screen_slideshow.has_method("set_interval_seconds"):
+		screen_slideshow.call("set_interval_seconds", value)
+
+func _refresh_screen_toggle_text(is_enabled: bool) -> void:
+	if not screen_toggle_button:
+		return
+	screen_toggle_button.text = "Screen On" if is_enabled else "Screen Off"
 
 func _find_item_by_text(selector: OptionButton, value: String) -> int:
 	for i in range(selector.item_count):
