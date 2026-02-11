@@ -21,10 +21,10 @@ sky_material = SubResource("ProceduralSkyMaterial_sgp6g")
 [sub_resource type="Environment" id="Environment_0wfyh"]
 background_mode = 1
 background_color = Color(0.043137256, 0.05882353, 0.09411765, 1)
-background_energy_multiplier = 0.45
+background_energy_multiplier = 0.8
 sky = SubResource("Sky_o5qli")
 ambient_light_source = 2
-ambient_light_color = Color(0.16470589, 0.19607843, 0.25882354, 1)
+ambient_light_color = Color(0.24705882, 0.2784314, 0.34117648, 1)
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_sugp2"]
 top_radius = 2.2
@@ -40,6 +40,16 @@ albedo_color = Color(0.15294118, 0.1764706, 0.22745098, 1)
 metallic = 0.65
 roughness = 0.22
 
+[sub_resource type="CylinderMesh" id="CylinderMesh_floor_outer"]
+top_radius = 14.0
+bottom_radius = 14.0
+height = 0.06
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor_base"]
+albedo_color = Color(0.19215687, 0.20392157, 0.22745098, 1)
+metallic = 0.32
+roughness = 0.28
+
 [sub_resource type="QuadMesh" id="QuadMesh_screen"]
 size = Vector2(9.6, 5.4)
 
@@ -50,12 +60,19 @@ size = Vector3(12, 6.5, 0.3)
 size = Vector3(4.8, 3.2, 0.22)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_brand_wall"]
-albedo_color = Color(0.08627451, 0.10980392, 0.14901961, 1)
+albedo_color = Color(0.12941177, 0.15294118, 0.19607843, 1)
 roughness = 0.72
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_spec_wall"]
-albedo_color = Color(0.13333334, 0.17254902, 0.23921569, 1)
+albedo_color = Color(0.16470589, 0.20392157, 0.27058825, 1)
 roughness = 0.58
+
+[sub_resource type="BoxMesh" id="BoxMesh_wing_wall"]
+size = Vector3(3.0, 4.2, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wing_wall"]
+albedo_color = Color(0.14509805, 0.16470589, 0.20784314, 1)
+roughness = 0.7
 
 [node name="Main" type="Node3D" unique_id=865511161]
 script = ExtResource("9_t14w1")
@@ -64,8 +81,8 @@ script = ExtResource("9_t14w1")
 environment = SubResource("Environment_0wfyh")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=707622321]
-light_color = Color(1, 0.94509804, 0.8392157, 1)
-light_energy = 1.1
+light_color = Color(0.98039216, 0.972549, 0.9529412, 1)
+light_energy = 1.7
 shadow_enabled = true
 
 [node name="OrbitCamera" type="Camera3D" parent="." unique_id=791855750 node_paths=PackedStringArray("target")]
@@ -89,6 +106,11 @@ material_override = SubResource("StandardMaterial3D_stage")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Stage/Platform/StaticBody3D" unique_id=1282772031]
 shape = SubResource("CylinderShape3D_jyhfs")
 
+[node name="FloorOuter" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.14, 0)
+mesh = SubResource("CylinderMesh_floor_outer")
+material_override = SubResource("StandardMaterial3D_floor_base")
+
 [node name="LightPillars" type="Node3D" parent="." unique_id=1915213956]
 script = ExtResource("4_tefeu")
 pillar_scene = ExtResource("5_o6xl0")
@@ -98,20 +120,20 @@ pillar_scene = ExtResource("5_o6xl0")
 [node name="KeyLightLeft" type="OmniLight3D" parent="LightingRig"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, 3.8, 2.1)
 light_color = Color(1, 0.9529412, 0.84705883, 1)
-light_energy = 0.95
+light_energy = 1.15
 omni_range = 10.0
 shadow_enabled = true
 
 [node name="KeyLightRight" type="OmniLight3D" parent="LightingRig"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2, 3.6, 1.8)
 light_color = Color(0.9254902, 0.9490196, 1, 1)
-light_energy = 0.85
+light_energy = 1.0
 omni_range = 10.0
 
 [node name="RimLight" type="OmniLight3D" parent="LightingRig"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.0, -4.2)
 light_color = Color(0.5176471, 0.70980394, 1, 1)
-light_energy = 0.6
+light_energy = 0.72
 omni_range = 12.0
 
 [node name="BackScreenRoot" type="Node3D" parent="."]
@@ -129,6 +151,16 @@ material_override = SubResource("StandardMaterial3D_brand_wall")
 transform = Transform3D(0.42261824, 0, -0.9063078, 0, 1, 0, 0.9063078, 0, 0.42261824, 5.6, 1.7, -7.8)
 mesh = SubResource("BoxMesh_spec_wall")
 material_override = SubResource("StandardMaterial3D_spec_wall")
+
+[node name="LeftWingWall" type="MeshInstance3D" parent="BackScreenRoot"]
+transform = Transform3D(0.9510565, 0, 0.309017, 0, 1, 0, -0.309017, 0, 0.9510565, -7.5, 1.9, -9.4)
+mesh = SubResource("BoxMesh_wing_wall")
+material_override = SubResource("StandardMaterial3D_wing_wall")
+
+[node name="RightWingWall" type="MeshInstance3D" parent="BackScreenRoot"]
+transform = Transform3D(0.9510565, 0, -0.309017, 0, 1, 0, 0.309017, 0, 0.9510565, 7.5, 1.9, -9.4)
+mesh = SubResource("BoxMesh_wing_wall")
+material_override = SubResource("StandardMaterial3D_wing_wall")
 
 [node name="ScreenSlideshow" type="Node" parent="BackScreenRoot" node_paths=PackedStringArray("screen_mesh_path")]
 script = ExtResource("12_screen")
