@@ -6,12 +6,16 @@
 [ext_resource type="PackedScene" uid="uid://bgny7xlxsbxxx" path="res://scenes/light_pillar.tscn" id="5_o6xl0"]
 [ext_resource type="AudioStream" uid="uid://bcq8fwxdxv31y" path="res://assets/music/sleep-talking.ogg" id="6_o6xl0"]
 [ext_resource type="Script" uid="uid://b8u54pm62tda4" path="res://scripts/audio_visualizer.gd" id="6_tipki"]
-[ext_resource type="Script" path="res://scripts/car_manager.gd" id="7_31jq3"]
-[ext_resource type="Script" path="res://scripts/music_player.gd" id="8_o3c81"]
-[ext_resource type="Script" path="res://scripts/main.gd" id="9_t14w1"]
+[ext_resource type="Script" uid="uid://bh4rfbhsj4vut" path="res://scripts/car_manager.gd" id="7_31jq3"]
+[ext_resource type="Script" uid="uid://s3qbltj8vt2k" path="res://scripts/music_player.gd" id="8_o3c81"]
+[ext_resource type="Script" uid="uid://dtqjaqnw5jh4b" path="res://scripts/main.gd" id="9_t14w1"]
 [ext_resource type="PackedScene" path="res://scenes/cars/1962_ferrari_250_gto.tscn" id="10_f250g"]
 [ext_resource type="PackedScene" path="res://scenes/cars/1985_toyota_sprinter_trueno_ae86.tscn" id="11_ae86x"]
-[ext_resource type="Script" path="res://scripts/screen_slideshow.gd" id="12_screen"]
+[ext_resource type="Script" uid="uid://37v2g4twn4mc" path="res://scripts/screen_slideshow.gd" id="12_screen"]
+[ext_resource type="Texture2D" uid="uid://ddrpctyoesgkn" path="res://assets/slides/slide_01.png" id="13_brand"]
+[ext_resource type="Texture2D" uid="uid://biemxyg2007hq" path="res://assets/slides/slide_02.png" id="14_spec"]
+[ext_resource type="Texture2D" uid="uid://7nlheosxuf03" path="res://assets/slides/slide_03.png" id="15_wing_l"]
+[ext_resource type="Texture2D" uid="uid://ddrpctyoesgkn" path="res://assets/slides/slide_01.png" id="16_wing_r"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sgp6g"]
 
@@ -20,11 +24,18 @@ sky_material = SubResource("ProceduralSkyMaterial_sgp6g")
 
 [sub_resource type="Environment" id="Environment_0wfyh"]
 background_mode = 1
-background_color = Color(0.043137256, 0.05882353, 0.09411765, 1)
-background_energy_multiplier = 0.8
+background_color = Color(0.08235294, 0.101960786, 0.14509805, 1)
+background_energy_multiplier = 1.6
 sky = SubResource("Sky_o5qli")
-ambient_light_source = 2
-ambient_light_color = Color(0.24705882, 0.2784314, 0.34117648, 1)
+ambient_light_source = 1
+ambient_light_color = Color(0.5019608, 0.54509807, 0.61960787, 1)
+ambient_light_energy = 2.4
+tonemap_exposure = 1.18
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_stage"]
+albedo_color = Color(0.15294118, 0.1764706, 0.22745098, 1)
+metallic = 0.65
+roughness = 0.22
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_sugp2"]
 top_radius = 2.2
@@ -35,44 +46,101 @@ height = 0.15
 height = 0.15
 radius = 2.2
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_stage"]
-albedo_color = Color(0.15294118, 0.1764706, 0.22745098, 1)
-metallic = 0.65
-roughness = 0.22
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor_base"]
+albedo_color = Color(0.30980393, 0.32941177, 0.37254903, 1)
+metallic = 0.32
+roughness = 0.28
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_floor_outer"]
 top_radius = 14.0
 bottom_radius = 14.0
 height = 0.06
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor_base"]
-albedo_color = Color(0.19215687, 0.20392157, 0.22745098, 1)
-metallic = 0.32
-roughness = 0.28
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_shell_wall"]
+albedo_color = Color(0.2784314, 0.31764707, 0.3882353, 1)
+roughness = 0.76
+
+[sub_resource type="BoxMesh" id="BoxMesh_shell_side"]
+size = Vector3(0.4, 6, 26)
+
+[sub_resource type="BoxMesh" id="BoxMesh_shell_back"]
+size = Vector3(28, 6, 0.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_shell_ceiling"]
+albedo_color = Color(0.2627451, 0.2901961, 0.34509805, 1)
+roughness = 0.82
+
+[sub_resource type="BoxMesh" id="BoxMesh_shell_ceiling"]
+size = Vector3(28, 0.3, 26)
 
 [sub_resource type="QuadMesh" id="QuadMesh_screen"]
 size = Vector2(9.6, 5.4)
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_brand_wall"]
+albedo_color = Color(0.33333334, 0.35686275, 0.40392157, 1)
+roughness = 0.8
+
 [sub_resource type="BoxMesh" id="BoxMesh_brand_wall"]
 size = Vector3(12, 6.5, 0.3)
 
-[sub_resource type="BoxMesh" id="BoxMesh_spec_wall"]
-size = Vector3(4.8, 3.2, 0.22)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_brand_wall"]
-albedo_color = Color(0.12941177, 0.15294118, 0.19607843, 1)
-roughness = 0.72
-
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_spec_wall"]
-albedo_color = Color(0.16470589, 0.20392157, 0.27058825, 1)
-roughness = 0.58
+albedo_color = Color(0.46666667, 0.49803922, 0.5568628, 1)
+roughness = 0.68
 
-[sub_resource type="BoxMesh" id="BoxMesh_wing_wall"]
-size = Vector3(3.0, 4.2, 0.2)
+[sub_resource type="BoxMesh" id="BoxMesh_spec_wall"]
+size = Vector3(6.2, 3.8, 0.24)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wing_wall"]
-albedo_color = Color(0.14509805, 0.16470589, 0.20784314, 1)
-roughness = 0.7
+albedo_color = Color(0.38431373, 0.41960785, 0.48235294, 1)
+roughness = 0.74
+
+[sub_resource type="BoxMesh" id="BoxMesh_wing_wall"]
+size = Vector3(3.6, 4.8, 0.22)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_brand_logo"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("13_brand")
+emission_enabled = true
+emission_texture = ExtResource("13_brand")
+emission_energy_multiplier = 0.22
+
+[sub_resource type="QuadMesh" id="QuadMesh_brand_logo"]
+size = Vector2(3.2, 0.95)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_spec_poster"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("14_spec")
+emission_enabled = true
+emission_texture = ExtResource("14_spec")
+emission_energy_multiplier = 0.3
+
+[sub_resource type="QuadMesh" id="QuadMesh_spec_poster"]
+size = Vector2(3.2, 2.1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wing_poster_left"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("15_wing_l")
+emission_enabled = true
+emission_texture = ExtResource("15_wing_l")
+emission_energy_multiplier = 0.26
+
+[sub_resource type="QuadMesh" id="QuadMesh_wing_poster"]
+size = Vector2(1.6, 2.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wing_poster_right"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_texture = ExtResource("16_wing_r")
+emission_enabled = true
+emission_texture = ExtResource("16_wing_r")
+emission_energy_multiplier = 0.26
 
 [node name="Main" type="Node3D" unique_id=865511161]
 script = ExtResource("9_t14w1")
@@ -81,8 +149,9 @@ script = ExtResource("9_t14w1")
 environment = SubResource("Environment_0wfyh")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=707622321]
+transform = Transform3D(0.76604444, -0.41317588, 0.4924039, 0, 0.76604444, 0.64278764, -0.64278764, -0.4924039, 0.5868241, 0, 0, 0)
 light_color = Color(0.98039216, 0.972549, 0.9529412, 1)
-light_energy = 1.7
+light_energy = 3.6
 shadow_enabled = true
 
 [node name="OrbitCamera" type="Camera3D" parent="." unique_id=791855750 node_paths=PackedStringArray("target")]
@@ -98,76 +167,49 @@ script = ExtResource("2_sugp2")
 
 [node name="Platform" type="MeshInstance3D" parent="Stage" unique_id=1911327015]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08393791, 0)
-mesh = SubResource("CylinderMesh_sugp2")
 material_override = SubResource("StandardMaterial3D_stage")
+mesh = SubResource("CylinderMesh_sugp2")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Stage/Platform" unique_id=1767355441]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Stage/Platform/StaticBody3D" unique_id=1282772031]
 shape = SubResource("CylinderShape3D_jyhfs")
 
-[node name="FloorOuter" type="MeshInstance3D" parent="."]
+[node name="FloorOuter" type="MeshInstance3D" parent="." unique_id=737577889]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.14, 0)
-mesh = SubResource("CylinderMesh_floor_outer")
 material_override = SubResource("StandardMaterial3D_floor_base")
+mesh = SubResource("CylinderMesh_floor_outer")
+
+[node name="ShowroomShell" type="Node3D" parent="." unique_id=1834233666]
+
+[node name="LeftWall" type="MeshInstance3D" parent="ShowroomShell" unique_id=1312199222]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 3, 0)
+material_override = SubResource("StandardMaterial3D_shell_wall")
+mesh = SubResource("BoxMesh_shell_side")
+
+[node name="RightWall" type="MeshInstance3D" parent="ShowroomShell" unique_id=919546515]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 3, 0)
+material_override = SubResource("StandardMaterial3D_shell_wall")
+mesh = SubResource("BoxMesh_shell_side")
+
+[node name="RearWall" type="MeshInstance3D" parent="ShowroomShell" unique_id=1401310374]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -14.6)
+material_override = SubResource("StandardMaterial3D_shell_wall")
+mesh = SubResource("BoxMesh_shell_back")
+
+[node name="EntryWall" type="MeshInstance3D" parent="ShowroomShell" unique_id=305105363]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 13)
+material_override = SubResource("StandardMaterial3D_shell_wall")
+mesh = SubResource("BoxMesh_shell_back")
+
+[node name="Ceiling" type="MeshInstance3D" parent="ShowroomShell" unique_id=1512612985]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.1, 0)
+material_override = SubResource("StandardMaterial3D_shell_ceiling")
+mesh = SubResource("BoxMesh_shell_ceiling")
 
 [node name="LightPillars" type="Node3D" parent="." unique_id=1915213956]
 script = ExtResource("4_tefeu")
 pillar_scene = ExtResource("5_o6xl0")
-
-[node name="LightingRig" type="Node3D" parent="."]
-
-[node name="KeyLightLeft" type="OmniLight3D" parent="LightingRig"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, 3.8, 2.1)
-light_color = Color(1, 0.9529412, 0.84705883, 1)
-light_energy = 1.15
-omni_range = 10.0
-shadow_enabled = true
-
-[node name="KeyLightRight" type="OmniLight3D" parent="LightingRig"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2, 3.6, 1.8)
-light_color = Color(0.9254902, 0.9490196, 1, 1)
-light_energy = 1.0
-omni_range = 10.0
-
-[node name="RimLight" type="OmniLight3D" parent="LightingRig"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.0, -4.2)
-light_color = Color(0.5176471, 0.70980394, 1, 1)
-light_energy = 0.72
-omni_range = 12.0
-
-[node name="BackScreenRoot" type="Node3D" parent="."]
-
-[node name="MainScreen" type="MeshInstance3D" parent="BackScreenRoot"]
-transform = Transform3D(0.9781476, 0, 0.2079117, 0, 1, 0, -0.2079117, 0, 0.9781476, 0, 2.7, -13.0)
-mesh = SubResource("QuadMesh_screen")
-
-[node name="BrandWall" type="MeshInstance3D" parent="BackScreenRoot"]
-transform = Transform3D(0.9781476, 0, 0.2079117, 0, 1, 0, -0.2079117, 0, 0.9781476, 0, 2.7, -13.3)
-mesh = SubResource("BoxMesh_brand_wall")
-material_override = SubResource("StandardMaterial3D_brand_wall")
-
-[node name="SpecWall" type="MeshInstance3D" parent="BackScreenRoot"]
-transform = Transform3D(0.42261824, 0, -0.9063078, 0, 1, 0, 0.9063078, 0, 0.42261824, 5.6, 1.7, -7.8)
-mesh = SubResource("BoxMesh_spec_wall")
-material_override = SubResource("StandardMaterial3D_spec_wall")
-
-[node name="LeftWingWall" type="MeshInstance3D" parent="BackScreenRoot"]
-transform = Transform3D(0.9510565, 0, 0.309017, 0, 1, 0, -0.309017, 0, 0.9510565, -7.5, 1.9, -9.4)
-mesh = SubResource("BoxMesh_wing_wall")
-material_override = SubResource("StandardMaterial3D_wing_wall")
-
-[node name="RightWingWall" type="MeshInstance3D" parent="BackScreenRoot"]
-transform = Transform3D(0.9510565, 0, -0.309017, 0, 1, 0, 0.309017, 0, 0.9510565, 7.5, 1.9, -9.4)
-mesh = SubResource("BoxMesh_wing_wall")
-material_override = SubResource("StandardMaterial3D_wing_wall")
-
-[node name="ScreenSlideshow" type="Node" parent="BackScreenRoot" node_paths=PackedStringArray("screen_mesh_path")]
-script = ExtResource("12_screen")
-screen_mesh_path = NodePath("../MainScreen")
-seconds_per_slide = 6.5
-fade_in_duration = 0.5
-emission_energy = 1.4
 
 [node name="LightPillar1" parent="LightPillars" unique_id=584079878 instance=ExtResource("5_o6xl0")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3)
@@ -193,18 +235,264 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, 0)
 [node name="LightPillar8" parent="LightPillars" unique_id=939562452 instance=ExtResource("5_o6xl0")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.12, 0, 2.12)
 
+[node name="LightingRig" type="Node3D" parent="." unique_id=1884980061]
+
+[node name="KeyLightLeft" type="OmniLight3D" parent="LightingRig" unique_id=1476583116]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, 3.8, 2.1)
+light_color = Color(1, 0.9529412, 0.84705883, 1)
+light_energy = 1.15
+shadow_enabled = true
+omni_range = 10.0
+
+[node name="KeyLightRight" type="OmniLight3D" parent="LightingRig" unique_id=1609681910]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2, 3.6, 1.8)
+light_color = Color(0.9254902, 0.9490196, 1, 1)
+light_energy = 1.1
+omni_range = 10.0
+
+[node name="RimLight" type="OmniLight3D" parent="LightingRig" unique_id=549228480]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, -4.2)
+light_color = Color(0.5176471, 0.70980394, 1, 1)
+omni_range = 12.0
+
+[node name="AmbientLights" type="Node3D" parent="." unique_id=1570378810]
+
+[node name="AmbientFillLeft" type="OmniLight3D" parent="AmbientLights" unique_id=743871126]
+transform = Transform3D(0.9396926, 0, 0.34202015, 0, 1, 0, -0.34202015, 0, 0.9396926, -8.5, 2.8, 2.8)
+light_color = Color(0.3764706, 0.49803922, 0.64705884, 1)
+light_energy = 1.6
+omni_range = 16.0
+
+[node name="AmbientFillRight" type="OmniLight3D" parent="AmbientLights" unique_id=1876510654]
+transform = Transform3D(0.9396926, 0, -0.34202015, 0, 1, 0, 0.34202015, 0, 0.9396926, 8.5, 2.8, 2.8)
+light_color = Color(0.3764706, 0.49803922, 0.64705884, 1)
+light_energy = 1.6
+omni_range = 16.0
+
+[node name="CeilingFillFront" type="OmniLight3D" parent="AmbientLights" unique_id=1259274548]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.2, 3.2)
+light_color = Color(0.92156863, 0.9411765, 1, 1)
+light_energy = 1.8
+omni_range = 18.0
+
+[node name="CeilingFillRear" type="OmniLight3D" parent="AmbientLights" unique_id=184214201]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, -4.6)
+light_color = Color(0.8784314, 0.9019608, 0.96862745, 1)
+light_energy = 1.5
+omni_range = 17.0
+
+[node name="RearWallWash" type="OmniLight3D" parent="AmbientLights" unique_id=82298703]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.8, -10.8)
+light_color = Color(0.8627451, 0.9019608, 0.98039216, 1)
+light_energy = 2.2
+omni_range = 22.0
+
+[node name="LeftWallWash" type="OmniLight3D" parent="AmbientLights" unique_id=89970013]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.2, 2.6, 0)
+light_color = Color(0.78431374, 0.8509804, 0.9490196, 1)
+light_energy = 1.8
+omni_range = 20.0
+
+[node name="RightWallWash" type="OmniLight3D" parent="AmbientLights" unique_id=654706564]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.2, 2.6, 0)
+light_color = Color(0.78431374, 0.8509804, 0.9490196, 1)
+light_energy = 1.8
+omni_range = 20.0
+
+[node name="FrontWallWash" type="OmniLight3D" parent="AmbientLights" unique_id=2015888925]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.8, 10.8)
+light_color = Color(0.85882354, 0.9019608, 0.9843137, 1)
+light_energy = 1.9
+omni_range = 20.0
+
+[node name="CeilingLights" type="Node3D" parent="AmbientLights" unique_id=1280589077]
+
+[node name="CeilingLight_01" type="OmniLight3D" parent="AmbientLights/CeilingLights" unique_id=172298858]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 5.4, -8)
+light_color = Color(0.9607843, 0.96862745, 1, 1)
+light_energy = 0.9
+omni_range = 10.5
+
+[node name="CeilingLight_02" type="OmniLight3D" parent="AmbientLights/CeilingLights" unique_id=633061770]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.7, 5.4, -8)
+light_color = Color(0.9607843, 0.96862745, 1, 1)
+light_energy = 0.9
+omni_range = 10.5
+
+[node name="CeilingLight_03" type="OmniLight3D" parent="AmbientLights/CeilingLights" unique_id=1762161828]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.7, 5.4, -8)
+light_color = Color(0.9607843, 0.96862745, 1, 1)
+light_energy = 0.9
+omni_range = 10.5
+
+[node name="CeilingLight_04" type="OmniLight3D" parent="AmbientLights/CeilingLights" unique_id=1068465873]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 5.4, -8)
+light_color = Color(0.9607843, 0.96862745, 1, 1)
+light_energy = 0.9
+omni_range = 10.5
+
+[node name="CeilingLight_05" type="OmniLight3D" parent="AmbientLights/CeilingLights" unique_id=2063830806]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 5.4, -2.7)
+light_color = Color(0.9607843, 0.96862745, 1, 1)
+light_energy = 0.9
+omni_range = 10.5
+
+[node name="CeilingLight_06" type="OmniLight3D" parent="AmbientLights/CeilingLights" unique_id=2027557352]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.7, 5.4, -2.7)
+light_color = Color(0.9607843, 0.96862745, 1, 1)
+light_energy = 0.9
+omni_range = 10.5
+
+[node name="CeilingLight_07" type="OmniLight3D" parent="AmbientLights/CeilingLights" unique_id=1261804699]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.7, 5.4, -2.7)
+light_color = Color(0.9607843, 0.96862745, 1, 1)
+light_energy = 0.9
+omni_range = 10.5
+
+[node name="CeilingLight_08" type="OmniLight3D" parent="AmbientLights/CeilingLights" unique_id=1956405219]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 5.4, -2.7)
+light_color = Color(0.9607843, 0.96862745, 1, 1)
+light_energy = 0.9
+omni_range = 10.5
+
+[node name="CeilingLight_09" type="OmniLight3D" parent="AmbientLights/CeilingLights" unique_id=1782166018]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 5.4, 2.7)
+light_color = Color(0.9607843, 0.96862745, 1, 1)
+light_energy = 0.9
+omni_range = 10.5
+
+[node name="CeilingLight_10" type="OmniLight3D" parent="AmbientLights/CeilingLights" unique_id=931170356]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.7, 5.4, 2.7)
+light_color = Color(0.9607843, 0.96862745, 1, 1)
+light_energy = 0.9
+omni_range = 10.5
+
+[node name="CeilingLight_11" type="OmniLight3D" parent="AmbientLights/CeilingLights" unique_id=1482969832]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.7, 5.4, 2.7)
+light_color = Color(0.9607843, 0.96862745, 1, 1)
+light_energy = 0.9
+omni_range = 10.5
+
+[node name="CeilingLight_12" type="OmniLight3D" parent="AmbientLights/CeilingLights" unique_id=550881366]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 5.4, 2.7)
+light_color = Color(0.9607843, 0.96862745, 1, 1)
+light_energy = 0.9
+omni_range = 10.5
+
+[node name="WallSconces" type="Node3D" parent="AmbientLights" unique_id=332197070]
+
+[node name="WallSconce_Left_01" type="OmniLight3D" parent="AmbientLights/WallSconces" unique_id=384995796]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.8, 3.4, -8.2)
+light_color = Color(0.8901961, 0.9254902, 0.98039216, 1)
+light_energy = 0.85
+omni_range = 8.0
+
+[node name="WallSconce_Left_02" type="OmniLight3D" parent="AmbientLights/WallSconces" unique_id=598331831]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.8, 3.4, 0)
+light_color = Color(0.8901961, 0.9254902, 0.98039216, 1)
+light_energy = 0.85
+omni_range = 8.0
+
+[node name="WallSconce_Left_03" type="OmniLight3D" parent="AmbientLights/WallSconces" unique_id=441526598]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.8, 3.4, 8.2)
+light_color = Color(0.8901961, 0.9254902, 0.98039216, 1)
+light_energy = 0.85
+omni_range = 8.0
+
+[node name="WallSconce_Right_01" type="OmniLight3D" parent="AmbientLights/WallSconces" unique_id=715831385]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.8, 3.4, -8.2)
+light_color = Color(0.8901961, 0.9254902, 0.98039216, 1)
+light_energy = 0.85
+omni_range = 8.0
+
+[node name="WallSconce_Right_02" type="OmniLight3D" parent="AmbientLights/WallSconces" unique_id=2072098783]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.8, 3.4, 0)
+light_color = Color(0.8901961, 0.9254902, 0.98039216, 1)
+light_energy = 0.85
+omni_range = 8.0
+
+[node name="WallSconce_Right_03" type="OmniLight3D" parent="AmbientLights/WallSconces" unique_id=846714935]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.8, 3.4, 8.2)
+light_color = Color(0.8901961, 0.9254902, 0.98039216, 1)
+light_energy = 0.85
+omni_range = 8.0
+
+[node name="WallSconce_Rear" type="OmniLight3D" parent="AmbientLights/WallSconces" unique_id=1087658102]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.6, -12.4)
+light_color = Color(0.9137255, 0.9372549, 0.9843137, 1)
+light_energy = 0.95
+omni_range = 9.5
+
+[node name="WallSconce_Entry" type="OmniLight3D" parent="AmbientLights/WallSconces" unique_id=2135367702]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.6, 12.4)
+light_color = Color(0.9137255, 0.9372549, 0.9843137, 1)
+light_energy = 0.95
+omni_range = 9.5
+
+[node name="BackScreenRoot" type="Node3D" parent="." unique_id=786896640]
+
+[node name="MainScreen" type="MeshInstance3D" parent="BackScreenRoot" unique_id=1811818168]
+transform = Transform3D(0.9781476, 0, 0.2079117, 0, 1, 0, -0.2079117, 0, 0.9781476, 0, 2.7, -13)
+mesh = SubResource("QuadMesh_screen")
+
+[node name="BrandWall" type="MeshInstance3D" parent="BackScreenRoot" unique_id=71189662]
+transform = Transform3D(0.9781476, 0, 0.2079117, 0, 1, 0, -0.2079117, 0, 0.9781476, 0, 2.7, -13.3)
+material_override = SubResource("StandardMaterial3D_brand_wall")
+mesh = SubResource("BoxMesh_brand_wall")
+
+[node name="BrandLogoPanel" type="MeshInstance3D" parent="BackScreenRoot/BrandWall" unique_id=134764578]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, 0.17)
+material_override = SubResource("StandardMaterial3D_brand_logo")
+mesh = SubResource("QuadMesh_brand_logo")
+
+[node name="SpecWall" type="MeshInstance3D" parent="BackScreenRoot" unique_id=2113370787]
+transform = Transform3D(0.39073116, 0, -0.92050487, 0, 1, 0, 0.92050487, 0, 0.39073116, 6.4, 2, -8.6)
+material_override = SubResource("StandardMaterial3D_spec_wall")
+mesh = SubResource("BoxMesh_spec_wall")
+
+[node name="SpecPosterPanel" type="MeshInstance3D" parent="BackScreenRoot/SpecWall" unique_id=1638902073]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0.14)
+material_override = SubResource("StandardMaterial3D_spec_poster")
+mesh = SubResource("QuadMesh_spec_poster")
+
+[node name="LeftWingWall" type="MeshInstance3D" parent="BackScreenRoot" unique_id=2104057178]
+transform = Transform3D(0.9335804, 0, 0.35836795, 0, 1, 0, -0.35836795, 0, 0.9335804, -8.3, 2.2, -9.9)
+material_override = SubResource("StandardMaterial3D_wing_wall")
+mesh = SubResource("BoxMesh_wing_wall")
+
+[node name="LeftWingPoster" type="MeshInstance3D" parent="BackScreenRoot/LeftWingWall" unique_id=775259454]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0.13)
+material_override = SubResource("StandardMaterial3D_wing_poster_left")
+mesh = SubResource("QuadMesh_wing_poster")
+
+[node name="RightWingWall" type="MeshInstance3D" parent="BackScreenRoot" unique_id=1126856355]
+transform = Transform3D(0.9335804, 0, -0.35836795, 0, 1, 0, 0.35836795, 0, 0.9335804, 8.3, 2.2, -9.9)
+material_override = SubResource("StandardMaterial3D_wing_wall")
+mesh = SubResource("BoxMesh_wing_wall")
+
+[node name="RightWingPoster" type="MeshInstance3D" parent="BackScreenRoot/RightWingWall" unique_id=880837193]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0.13)
+material_override = SubResource("StandardMaterial3D_wing_poster_right")
+mesh = SubResource("QuadMesh_wing_poster")
+
+[node name="ScreenSlideshow" type="Node" parent="BackScreenRoot" unique_id=269852951]
+script = ExtResource("12_screen")
+seconds_per_slide = 6.5
+fade_in_duration = 0.5
+emission_energy = 1.4
+
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=1862575285]
 stream = ExtResource("6_o6xl0")
 
 [node name="CarManager" type="Node" parent="." unique_id=1903192842]
 script = ExtResource("7_31jq3")
-car_scenes = [ExtResource("10_f250g"), ExtResource("11_ae86x")]
+car_scenes = Array[PackedScene]([ExtResource("10_f250g"), ExtResource("11_ae86x")])
 car_names = Array[String](["1962 Ferrari 250 GTO", "1985 Toyota Sprinter Trueno AE86"])
 
 [node name="MusicPlayer" type="Node" parent="." unique_id=196202761 node_paths=PackedStringArray("audio_player")]
 script = ExtResource("8_o3c81")
 audio_player = NodePath("../AudioStreamPlayer")
-music_list = [ExtResource("6_o6xl0")]
+music_list = Array[AudioStream]([ExtResource("6_o6xl0")])
 music_names = Array[String](["Sleep Talking"])
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1563659224]
@@ -221,7 +509,7 @@ grow_vertical = 2
 layout_mode = 0
 offset_left = 20.0
 offset_top = 20.0
-offset_right = 660.0
+offset_right = 820.0
 offset_bottom = 68.0
 theme_override_constants/separation = 12
 
@@ -238,18 +526,74 @@ layout_mode = 2
 custom_minimum_size = Vector2(220, 48)
 layout_mode = 2
 
-[node name="ScreenToggleButton" type="Button" parent="CanvasLayer/MainUI/TopBar"]
+[node name="ScreenToggleButton" type="Button" parent="CanvasLayer/MainUI/TopBar" unique_id=1929715639]
 custom_minimum_size = Vector2(120, 48)
 layout_mode = 2
 text = "Screen On"
 
-[node name="SlideIntervalSlider" type="HSlider" parent="CanvasLayer/MainUI/TopBar"]
+[node name="SlideIntervalSlider" type="HSlider" parent="CanvasLayer/MainUI/TopBar" unique_id=1521262375]
 custom_minimum_size = Vector2(180, 48)
 layout_mode = 2
 min_value = 2.0
 max_value = 12.0
 step = 0.5
 value = 6.5
+
+[node name="WallPromoToggleButton" type="Button" parent="CanvasLayer/MainUI/TopBar" unique_id=1547953009]
+custom_minimum_size = Vector2(120, 48)
+layout_mode = 2
+text = "Promo On"
+
+[node name="LightingPanel" type="PanelContainer" parent="CanvasLayer/MainUI" unique_id=1169702714]
+layout_mode = 0
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -300.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 310.0
+
+[node name="LightingVBox" type="VBoxContainer" parent="CanvasLayer/MainUI/LightingPanel" unique_id=1181008771]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="LightingTitle" type="Label" parent="CanvasLayer/MainUI/LightingPanel/LightingVBox" unique_id=245737381]
+layout_mode = 2
+text = "Lighting"
+
+[node name="LightingModeLabel" type="Label" parent="CanvasLayer/MainUI/LightingPanel/LightingVBox" unique_id=1084975331]
+layout_mode = 2
+text = "Mode"
+
+[node name="LightingModeSelector" type="OptionButton" parent="CanvasLayer/MainUI/LightingPanel/LightingVBox" unique_id=1422201114]
+custom_minimum_size = Vector2(240, 38)
+layout_mode = 2
+
+[node name="BaseLightsToggle" type="CheckButton" parent="CanvasLayer/MainUI/LightingPanel/LightingVBox" unique_id=1345344589]
+layout_mode = 2
+button_pressed = true
+text = "Base Lights"
+
+[node name="CarLightsToggle" type="CheckButton" parent="CanvasLayer/MainUI/LightingPanel/LightingVBox" unique_id=788494334]
+layout_mode = 2
+button_pressed = true
+text = "Car Lights"
+
+[node name="AmbientLightsToggle" type="CheckButton" parent="CanvasLayer/MainUI/LightingPanel/LightingVBox" unique_id=16861132]
+layout_mode = 2
+button_pressed = true
+text = "Ambient Lights"
+
+[node name="EnvIntensityLabel" type="Label" parent="CanvasLayer/MainUI/LightingPanel/LightingVBox" unique_id=438632525]
+layout_mode = 2
+text = "Env Intensity"
+
+[node name="EnvIntensitySlider" type="HSlider" parent="CanvasLayer/MainUI/LightingPanel/LightingVBox" unique_id=2029401795]
+custom_minimum_size = Vector2(240, 32)
+layout_mode = 2
+max_value = 4.0
+step = 0.05
+value = 2.4
 
 [node name="AudioVisualizer" type="Node" parent="." unique_id=261673062 node_paths=PackedStringArray("light_pillars")]
 script = ExtResource("6_tipki")
