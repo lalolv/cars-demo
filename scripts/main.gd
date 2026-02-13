@@ -218,10 +218,10 @@ func _apply_texture_to_panel(panel: MeshInstance3D, texture: Texture2D) -> void:
 	material.albedo_texture = texture
 	material.emission_texture = texture
 
-func _set_promos_visible(visible: bool) -> void:
+func _set_promos_visible(show_promos: bool) -> void:
 	for panel in _promo_panels:
 		if panel:
-			panel.visible = visible
+			panel.visible = show_promos
 
 func _are_promos_visible() -> bool:
 	for panel in _promo_panels:
@@ -326,14 +326,14 @@ func _apply_lighting_mode(mode_index: int) -> void:
 	match mode_index:
 		LIGHTING_MODE_PRESENTATION:
 			_set_group_energy_scale("base", 1.0)
-			_set_group_energy_scale("car", 1.2)
+			_set_group_energy_scale("car", 1.3)
 			_set_group_energy_scale("ambient", 0.9)
 			_set_environment_energy(2.0)
 		LIGHTING_MODE_SHOWROOM_BRIGHT:
-			_set_group_energy_scale("base", 1.35)
-			_set_group_energy_scale("car", 1.2)
-			_set_group_energy_scale("ambient", 1.55)
-			_set_environment_energy(3.0)
+			_set_group_energy_scale("base", 1.0)
+			_set_group_energy_scale("car", 0.82)
+			_set_group_energy_scale("ambient", 1.05)
+			_set_environment_energy(0.8)
 		LIGHTING_MODE_ATMOSPHERE:
 			_set_group_energy_scale("base", 0.7)
 			_set_group_energy_scale("car", 1.0)
