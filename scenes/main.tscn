@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://dgeb5lrfsme5v" path="res://scripts/rotating_stage.gd" id="2_sugp2"]
 [ext_resource type="Script" uid="uid://b3j7huaktfvkn" path="res://scripts/light_pillars_layout.gd" id="4_tefeu"]
 [ext_resource type="PackedScene" uid="uid://bgny7xlxsbxxx" path="res://scenes/light_pillar.tscn" id="5_o6xl0"]
+[ext_resource type="Texture2D" uid="uid://kvm3af6k006l" path="res://assets/textures/showroom/floor_albedo.png" id="6_dp3eg"]
 [ext_resource type="AudioStream" uid="uid://bcq8fwxdxv31y" path="res://assets/music/sleep-talking.ogg" id="6_o6xl0"]
 [ext_resource type="Script" uid="uid://b8u54pm62tda4" path="res://scripts/audio_visualizer.gd" id="6_tipki"]
 [ext_resource type="Script" uid="uid://bh4rfbhsj4vut" path="res://scripts/car_manager.gd" id="7_31jq3"]
@@ -15,8 +16,8 @@
 [ext_resource type="Texture2D" uid="uid://biemxyg2007hq" path="res://assets/slides/slide_02.png" id="14_spec"]
 [ext_resource type="Texture2D" uid="uid://7nlheosxuf03" path="res://assets/slides/slide_03.png" id="15_wing_l"]
 [ext_resource type="Texture2D" uid="uid://ddrpctyoesgkn" path="res://assets/slides/slide_01.png" id="16_wing_r"]
-[ext_resource type="Shader" path="res://shaders/stage_edge_ring.gdshader" id="17_stage_ring"]
-[ext_resource type="Shader" path="res://shaders/floor_tiles.gdshader" id="18_floor_tiles"]
+[ext_resource type="Shader" uid="uid://conlbbfwm01wt" path="res://shaders/stage_edge_ring.gdshader" id="17_stage_ring"]
+[ext_resource type="Shader" uid="uid://d20kflr2lh05p" path="res://shaders/floor_tiles.gdshader" id="18_floor_tiles"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sgp6g"]
 
@@ -33,14 +34,8 @@ ambient_light_color = Color(0.95, 0.97, 1, 1)
 ambient_light_energy = 2.2
 tonemap_exposure = 0.94
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_stage"]
-albedo_color = Color(0.52, 0.55, 0.6, 1)
-metallic = 0.2
-roughness = 0.3
-clearcoat = 0.55
-clearcoat_roughness = 0.12
-
 [sub_resource type="ShaderMaterial" id="ShaderMaterial3D_stage_ring"]
+render_priority = 0
 shader = ExtResource("17_stage_ring")
 shader_parameter/base_color = Color(0.86, 0.87, 0.9, 1)
 shader_parameter/ring_color = Color(0.62, 0.64, 0.68, 1)
@@ -66,21 +61,18 @@ height = 0.15
 height = 0.15
 radius = 2.2
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_floor_base"]
-albedo_color = Color(0.56, 0.58, 0.62, 1)
-metallic = 0.08
-roughness = 0.44
-
 [sub_resource type="ShaderMaterial" id="ShaderMaterial3D_floor_tiles"]
+render_priority = 0
 shader = ExtResource("18_floor_tiles")
 shader_parameter/base_color = Color(0.31, 0.34, 0.38, 1)
 shader_parameter/alt_tile_color = Color(0.35, 0.38, 0.43, 1)
 shader_parameter/line_color = Color(0.5, 0.53, 0.58, 1)
 shader_parameter/tile_size = 1.4
-shader_parameter/line_width = 0.012
+shader_parameter/line_width = 0.00499999988824
 shader_parameter/line_softness = 0.01
 shader_parameter/checker_strength = 0.0
 shader_parameter/use_albedo_texture = false
+shader_parameter/albedo_texture = ExtResource("6_dp3eg")
 shader_parameter/texture_tile_size = 1.4
 shader_parameter/texture_uv_offset = Vector2(0, 0)
 shader_parameter/texture_blend = 1.0
