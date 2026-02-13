@@ -2,7 +2,7 @@ extends Node3D
 
 @export var rotation_speed: float = 5.0
 @export var auto_rotate: bool = true
-@export var target_car_size: float = 2.8
+@export var target_car_size: float = 3.8
 
 var current_car: Node = null
 @onready var car_mount: Node3D = $CarMount
