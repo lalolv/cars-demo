@@ -15,6 +15,8 @@
 [ext_resource type="Texture2D" uid="uid://biemxyg2007hq" path="res://assets/slides/slide_02.png" id="14_spec"]
 [ext_resource type="Texture2D" uid="uid://7nlheosxuf03" path="res://assets/slides/slide_03.png" id="15_wing_l"]
 [ext_resource type="Texture2D" uid="uid://ddrpctyoesgkn" path="res://assets/slides/slide_01.png" id="16_wing_r"]
+[ext_resource type="Shader" path="res://shaders/stage_edge_ring.gdshader" id="17_stage_ring"]
+[ext_resource type="Shader" path="res://shaders/floor_tiles.gdshader" id="18_floor_tiles"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sgp6g"]
 
@@ -38,6 +40,19 @@ roughness = 0.3
 clearcoat = 0.55
 clearcoat_roughness = 0.12
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial3D_stage_ring"]
+shader = ExtResource("17_stage_ring")
+shader_parameter/base_color = Color(0.86, 0.87, 0.9, 1)
+shader_parameter/ring_color = Color(0.62, 0.64, 0.68, 1)
+shader_parameter/ring_radius = 2.12
+shader_parameter/ring_width = 0.018
+shader_parameter/ring_softness = 0.01
+shader_parameter/side_darkening = 0.08
+shader_parameter/metallic_value = 0.1
+shader_parameter/roughness_value = 0.3
+shader_parameter/clearcoat_value = 0.45
+shader_parameter/clearcoat_roughness_value = 0.12
+
 [sub_resource type="CylinderMesh" id="CylinderMesh_sugp2"]
 top_radius = 2.2
 bottom_radius = 2.5
@@ -51,6 +66,18 @@ radius = 2.2
 albedo_color = Color(0.56, 0.58, 0.62, 1)
 metallic = 0.08
 roughness = 0.44
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial3D_floor_tiles"]
+shader = ExtResource("18_floor_tiles")
+shader_parameter/base_color = Color(0.31, 0.34, 0.38, 1)
+shader_parameter/alt_tile_color = Color(0.35, 0.38, 0.43, 1)
+shader_parameter/line_color = Color(0.5, 0.53, 0.58, 1)
+shader_parameter/tile_size = 1.4
+shader_parameter/line_width = 0.012
+shader_parameter/line_softness = 0.01
+shader_parameter/checker_strength = 0.0
+shader_parameter/metallic_value = 0.08
+shader_parameter/roughness_value = 0.44
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_floor_outer"]
 top_radius = 14.0
@@ -160,7 +187,7 @@ script = ExtResource("2_sugp2")
 
 [node name="Platform" type="MeshInstance3D" parent="Stage" unique_id=1911327015]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.08393791, 0)
-material_override = SubResource("StandardMaterial3D_stage")
+material_override = SubResource("ShaderMaterial3D_stage_ring")
 mesh = SubResource("CylinderMesh_sugp2")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Stage/Platform" unique_id=1767355441]
@@ -174,7 +201,7 @@ size = Vector3(8, 4.5, 8)
 
 [node name="FloorOuter" type="MeshInstance3D" parent="." unique_id=737577889]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.14, 0)
-material_override = SubResource("StandardMaterial3D_floor_base")
+material_override = SubResource("ShaderMaterial3D_floor_tiles")
 mesh = SubResource("CylinderMesh_floor_outer")
 
 [node name="ShowroomReflectionProbe" type="ReflectionProbe" parent="." unique_id=907511204]
