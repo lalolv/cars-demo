@@ -105,9 +105,6 @@ roughness = 0.7
 [sub_resource type="BoxMesh" id="BoxMesh_shell_ceiling"]
 size = Vector3(28, 0.3, 26)
 
-[sub_resource type="QuadMesh" id="QuadMesh_screen"]
-size = Vector2(9.6, 5.4)
-
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_brand_wall"]
 albedo_color = Color(0.82, 0.85, 0.9, 1)
 roughness = 0.74
@@ -115,14 +112,15 @@ roughness = 0.74
 [sub_resource type="BoxMesh" id="BoxMesh_brand_wall"]
 size = Vector3(12, 6.5, 0.3)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_brand_logo"]
-transparency = 1
-cull_mode = 2
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_screen_bezel"]
 shading_mode = 0
-albedo_texture = ExtResource("16_wing_r")
+albedo_color = Color(0.12, 0.12, 0.14, 1)
 
-[sub_resource type="QuadMesh" id="QuadMesh_brand_logo"]
-size = Vector2(3.2, 0.95)
+[sub_resource type="QuadMesh" id="QuadMesh_screen_bezel"]
+size = Vector2(10, 5.8)
+
+[sub_resource type="QuadMesh" id="QuadMesh_screen"]
+size = Vector2(9.6, 5.4)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_spec_wall"]
 albedo_color = Color(0.78, 0.81, 0.86, 1)
@@ -237,8 +235,12 @@ material_override = SubResource("StandardMaterial3D_shell_ceiling")
 mesh = SubResource("BoxMesh_shell_ceiling")
 
 [node name="LightPillars" type="Node3D" parent="." unique_id=1915213956]
+visible = false
 script = ExtResource("4_tefeu")
 pillar_scene = ExtResource("5_o6xl0")
+radius = 8.0
+arc_center_degrees = 0.0
+place_behind_camera_on_ready = false
 
 [node name="LightPillar1" parent="LightPillars" unique_id=584079878 instance=ExtResource("5_o6xl0")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3)
@@ -461,19 +463,19 @@ omni_range = 9.5
 
 [node name="BackScreenRoot" type="Node3D" parent="." unique_id=786896640]
 
-[node name="MainScreen" type="MeshInstance3D" parent="BackScreenRoot" unique_id=1811818168]
-transform = Transform3D(0.9781476, 0, 0.2079117, 0, 1, 0, -0.2079117, 0, 0.9781476, 0, 2.7, -13)
-mesh = SubResource("QuadMesh_screen")
-
 [node name="BrandWall" type="MeshInstance3D" parent="BackScreenRoot" unique_id=71189662]
-transform = Transform3D(0.9781476, 0, 0.2079117, 0, 1, 0, -0.2079117, 0, 0.9781476, 0, 2.7, -13.3)
+transform = Transform3D(0.9987873, 0, 0.049233288, 0, 1, 0, -0.049233288, 0, 0.9987873, -0.8166542, 2.908818, -12.830471)
 material_override = SubResource("StandardMaterial3D_brand_wall")
 mesh = SubResource("BoxMesh_brand_wall")
 
-[node name="BrandLogoPanel" type="MeshInstance3D" parent="BackScreenRoot/BrandWall" unique_id=134764578]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0.17)
-material_override = SubResource("StandardMaterial3D_brand_logo")
-mesh = SubResource("QuadMesh_brand_logo")
+[node name="ScreenBezel" type="MeshInstance3D" parent="BackScreenRoot/BrandWall" unique_id=237625101]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.2)
+material_override = SubResource("StandardMaterial3D_screen_bezel")
+mesh = SubResource("QuadMesh_screen_bezel")
+
+[node name="MainScreen" type="MeshInstance3D" parent="BackScreenRoot/BrandWall" unique_id=1811818168]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.25)
+mesh = SubResource("QuadMesh_screen")
 
 [node name="SpecWall" type="MeshInstance3D" parent="BackScreenRoot" unique_id=2113370787]
 transform = Transform3D(0.39073116, 0, -0.92050487, 0, 1, 0, 0.92050487, 0, 0.39073116, 6.4, 2, -8.6)
@@ -625,6 +627,6 @@ max_value = 1.5
 step = 0.05
 value = 0.8
 
-[node name="AudioVisualizer" type="Node" parent="." unique_id=261673062 node_paths=PackedStringArray("light_pillars")]
+[node name="AudioVisualizer" type="Node" parent="." unique_id=261673062 node_paths=PackedStringArray("stage_platform")]
 script = ExtResource("6_tipki")
-light_pillars = [NodePath("../LightPillars/LightPillar1"), NodePath("../LightPillars/LightPillar2"), NodePath("../LightPillars/LightPillar3"), NodePath("../LightPillars/LightPillar4"), NodePath("../LightPillars/LightPillar5"), NodePath("../LightPillars/LightPillar6"), NodePath("../LightPillars/LightPillar7"), NodePath("../LightPillars/LightPillar8")]
+stage_platform = NodePath("../Stage/Platform")

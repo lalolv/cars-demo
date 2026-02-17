@@ -17,6 +17,12 @@ uniform float roughness_value : hint_range(0.0, 1.0) = 0.3;
 uniform float clearcoat_value : hint_range(0.0, 1.0) = 0.45;
 uniform float clearcoat_roughness_value : hint_range(0.0, 1.0) = 0.12;
 
+// Audio-reactive edge glow
+uniform vec4 glow_color : source_color = vec4(0.3, 0.6, 1.0, 1.0);
+uniform float glow_intensity : hint_range(0.0, 1.0) = 0.0;
+uniform float glow_energy : hint_range(0.0, 10.0) = 4.0;
+uniform float glow_ring_width : hint_range(0.002, 0.4) = 0.06;
+
 varying vec3 world_normal;
 varying vec3 local_pos;
 
@@ -44,4 +50,10 @@ void fragment() {
 	ROUGHNESS = roughness_value;
 	CLEARCOAT = clearcoat_value;
 	CLEARCOAT_ROUGHNESS = clearcoat_roughness_value;
+
+	// Audio-reactive edge glow
+	float glow_ring_dist = abs(length(local_pos.xz) - ring_radius);
+	float glow_mask = 1.0 - smoothstep(glow_ring_width, glow_ring_width + ring_softness * 2.0, glow_ring_dist);
+	float edge_glow = glow_mask * top_face * glow_intensity;
+	EMISSION = glow_color.rgb * edge_glow * glow_energy;
 }

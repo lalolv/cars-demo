@@ -19,13 +19,11 @@ extends Node3D
 @onready var lighting_mode_selector: OptionButton = $CanvasLayer/MainUI/LightingPanel/LightingVBox/LightingModeSelector
 @onready var env_intensity_slider: HSlider = $CanvasLayer/MainUI/LightingPanel/LightingVBox/EnvIntensitySlider
 @onready var back_screen_root: Node3D = $BackScreenRoot
-@onready var brand_logo_panel: MeshInstance3D = $BackScreenRoot/BrandWall/BrandLogoPanel
 @onready var spec_poster_panel: MeshInstance3D = $BackScreenRoot/SpecWall/SpecPosterPanel
 @onready var left_wing_poster_panel: MeshInstance3D = $BackScreenRoot/LeftWingWall/LeftWingPoster
 @onready var right_wing_poster_panel: MeshInstance3D = $BackScreenRoot/RightWingWall/RightWingPoster
 @onready var screen_slideshow: Node = $BackScreenRoot/ScreenSlideshow
 
-@export var brand_logo_texture: Texture2D = preload("res://assets/slides/slide_01.png")
 @export var spec_poster_texture: Texture2D = preload("res://assets/slides/slide_02.png")
 @export var left_wing_poster_texture: Texture2D = preload("res://assets/slides/slide_03.png")
 @export var right_wing_poster_texture: Texture2D = preload("res://assets/slides/slide_01.png")
@@ -189,13 +187,11 @@ func _refresh_wall_promo_toggle_text(is_enabled: bool) -> void:
 	wall_promo_toggle_button.text = "Promo On" if is_enabled else "Promo Off"
 
 func _setup_promo_materials() -> void:
-	_apply_texture_to_panel(brand_logo_panel, brand_logo_texture)
 	_apply_texture_to_panel(spec_poster_panel, spec_poster_texture)
 	_apply_texture_to_panel(left_wing_poster_panel, left_wing_poster_texture)
 	_apply_texture_to_panel(right_wing_poster_panel, right_wing_poster_texture)
 
 	_promo_panels = [
-		brand_logo_panel,
 		spec_poster_panel,
 		left_wing_poster_panel,
 		right_wing_poster_panel,

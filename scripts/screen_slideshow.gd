@@ -20,6 +20,8 @@ var _fade_timer: float = 0.0
 func _ready() -> void:
 	_screen_mesh = get_node_or_null(screen_mesh_path) as MeshInstance3D
 	if not _screen_mesh:
+		_screen_mesh = get_parent().get_node_or_null("BrandWall/MainScreen") as MeshInstance3D
+	if not _screen_mesh:
 		_screen_mesh = get_parent().get_node_or_null("MainScreen") as MeshInstance3D
 	if not _screen_mesh:
 		push_error("ScreenSlideshow: screen mesh is missing.")
