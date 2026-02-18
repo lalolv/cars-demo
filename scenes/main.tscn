@@ -19,6 +19,7 @@
 [ext_resource type="Shader" uid="uid://conlbbfwm01wt" path="res://shaders/stage_edge_ring.gdshader" id="17_stage_ring"]
 [ext_resource type="Shader" uid="uid://d20kflr2lh05p" path="res://shaders/floor_tiles.gdshader" id="18_floor_tiles"]
 [ext_resource type="PackedScene" path="res://scenes/cars/cartoon_sports_car.tscn" id="19_autocartoons"]
+[ext_resource type="PackedScene" path="res://scenes/npcs/toy_robot_domowik.tscn" id="20_guide_robot"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sgp6g"]
 
@@ -52,6 +53,10 @@ shader_parameter/metallic_value = 0.1
 shader_parameter/roughness_value = 0.3
 shader_parameter/clearcoat_value = 0.45
 shader_parameter/clearcoat_roughness_value = 0.12
+shader_parameter/glow_color = Color(0.3, 0.6, 1, 1)
+shader_parameter/glow_intensity = 0.0
+shader_parameter/glow_energy = 4.0
+shader_parameter/glow_ring_width = 0.06
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_sugp2"]
 top_radius = 2.2
@@ -175,15 +180,18 @@ shadow_enabled = true
 
 [node name="OrbitCamera" type="Camera3D" parent="." unique_id=791855750 node_paths=PackedStringArray("target")]
 current = true
+fov = 52.0
 script = ExtResource("1_0wfyh")
 target = NodePath("../Stage")
-distance = 6.2
+distance = 7.0
+min_pitch = 12.0
+max_pitch = 50.0
 
 [node name="Stage" type="Node3D" parent="." unique_id=790330411]
 script = ExtResource("2_sugp2")
-car_size_overrides = {
+car_size_overrides = Dictionary[String, float]({
 "res://scenes/cars/cartoon_sports_car.tscn": 1.35
-}
+})
 
 [node name="CarMount" type="Node3D" parent="Stage" unique_id=1209937718]
 
@@ -200,6 +208,11 @@ shape = SubResource("CylinderShape3D_jyhfs")
 [node name="StageReflectionProbe" type="ReflectionProbe" parent="Stage" unique_id=1730154822]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 size = Vector3(8, 4.5, 8)
+
+[node name="NPCs" type="Node3D" parent="." unique_id=310794310]
+
+[node name="GuideRobot" parent="NPCs" unique_id=390918499 instance=ExtResource("20_guide_robot")]
+transform = Transform3D(0.49931967, 0, -0.86641777, 0, 1, 0, 0.86641777, 0, 0.49931967, -3.3846335, 0.28151947, 0.98103344)
 
 [node name="FloorOuter" type="MeshInstance3D" parent="." unique_id=737577889]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.14, 0)
