@@ -22,7 +22,7 @@ var _is_mouse_dragging: bool = false
 func _ready() -> void:
 	_update_camera_position()
 
-func _input(event: InputEvent) -> void:
+func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
 		if event.pressed:
 			_touch_positions[event.index] = event.position
