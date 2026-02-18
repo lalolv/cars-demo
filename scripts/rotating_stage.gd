@@ -80,10 +80,10 @@ func _fit_car_to_stage(car_root: Node) -> void:
 	var target_position: Vector3 = Vector3(-center.x, -combined_aabb.position.y, -center.z) * scale_factor
 
 	if car_node is RigidBody3D:
-		var model_node: Node3D = _find_model_root(car_node)
-		if model_node:
-			model_node.scale = Vector3.ONE * scale_factor
-			model_node.position = target_position
+		var fit_root: Node3D = _get_or_create_model_pivot(car_node)
+		if fit_root:
+			fit_root.scale = Vector3.ONE * scale_factor
+			fit_root.position = target_position
 		_ensure_collision_shape(car_node, combined_aabb, scale_factor, target_position)
 		car_node.position = Vector3.ZERO
 		car_node.scale = Vector3.ONE
@@ -160,6 +160,26 @@ func _find_model_root(car_node: Node3D) -> Node3D:
 		if child is Node3D and not (child is CollisionShape3D):
 			return child as Node3D
 	return null
+
+func _get_or_create_model_pivot(car_node: Node3D) -> Node3D:
+	var pivot: Node3D = car_node.get_node_or_null("ModelPivot") as Node3D
+	if pivot:
+		return pivot
+
+	var model_root: Node3D = _find_model_root(car_node)
+	if not model_root:
+		return null
+
+	pivot = Node3D.new()
+	pivot.name = "ModelPivot"
+	car_node.add_child(pivot)
+
+	var model_transform: Transform3D = model_root.transform
+	car_node.remove_child(model_root)
+	pivot.add_child(model_root)
+	model_root.transform = model_transform
+
+	return pivot
 
 func _has_collision_shape(node: Node) -> bool:
 	for child in node.get_children():

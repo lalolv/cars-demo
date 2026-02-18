@@ -8,11 +8,16 @@ extends Camera3D
 @export var zoom_speed: float = 0.02
 @export var min_pitch: float = 10.0
 @export var max_pitch: float = 60.0
+@export var limit_yaw_range: bool = true
+@export var min_yaw: float = -120.0
+@export var max_yaw: float = 120.0
+@export var mouse_rotate_button: MouseButton = MOUSE_BUTTON_LEFT
 
 var _yaw: float = 24.0
 var _pitch: float = 23.0
 var _touch_positions: Dictionary = {}
 var _last_pinch_distance: float = 0.0
+var _is_mouse_dragging: bool = false
 
 func _ready() -> void:
 	_update_camera_position()
@@ -32,13 +37,26 @@ func _input(event: InputEvent) -> void:
 		_touch_positions[event.index] = event.position
 
 		if _touch_positions.size() == 1:
-			_yaw -= event.relative.x * rotation_speed
-			_pitch += event.relative.y * rotation_speed
-			_pitch = clamp(_pitch, min_pitch, max_pitch)
-			_update_camera_position()
+			_apply_rotation_delta(event.relative)
 
 		elif _touch_positions.size() == 2:
 			_handle_pinch_zoom()
+
+	elif event is InputEventMouseButton:
+		if event.button_index == mouse_rotate_button:
+			_is_mouse_dragging = event.pressed
+
+	elif event is InputEventMouseMotion and _is_mouse_dragging:
+		_apply_rotation_delta(event.relative)
+
+func _apply_rotation_delta(relative: Vector2) -> void:
+	_yaw -= relative.x * rotation_speed
+	if limit_yaw_range:
+		_yaw = clamp(_yaw, min_yaw, max_yaw)
+
+	_pitch += relative.y * rotation_speed
+	_pitch = clamp(_pitch, min_pitch, max_pitch)
+	_update_camera_position()
 
 func _handle_pinch_zoom() -> void:
 	var current_dist = _get_pinch_distance()
