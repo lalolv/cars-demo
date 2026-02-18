@@ -1,0 +1,9 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/cartoon_sports_car/cartoon_sports_car.glb" id="1_model"]
+
+[node name="CarBody" type="RigidBody3D"]
+
+[node name="Model" parent="." instance=ExtResource("1_model")]
+
+[editable path="Model"]

@@ -18,6 +18,7 @@
 [ext_resource type="Texture2D" uid="uid://ddrpctyoesgkn" path="res://assets/slides/slide_01.png" id="16_wing_r"]
 [ext_resource type="Shader" uid="uid://conlbbfwm01wt" path="res://shaders/stage_edge_ring.gdshader" id="17_stage_ring"]
 [ext_resource type="Shader" uid="uid://d20kflr2lh05p" path="res://shaders/floor_tiles.gdshader" id="18_floor_tiles"]
+[ext_resource type="PackedScene" path="res://scenes/cars/cartoon_sports_car.tscn" id="19_autocartoons"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sgp6g"]
 
@@ -180,6 +181,9 @@ distance = 6.2
 
 [node name="Stage" type="Node3D" parent="." unique_id=790330411]
 script = ExtResource("2_sugp2")
+car_size_overrides = {
+"res://scenes/cars/cartoon_sports_car.tscn": 1.35
+}
 
 [node name="CarMount" type="Node3D" parent="Stage" unique_id=1209937718]
 
@@ -518,8 +522,8 @@ stream = ExtResource("6_o6xl0")
 
 [node name="CarManager" type="Node" parent="." unique_id=1903192842]
 script = ExtResource("7_31jq3")
-car_scenes = Array[PackedScene]([ExtResource("10_f250g"), ExtResource("11_ae86x")])
-car_names = Array[String](["1962 Ferrari 250 GTO", "1985 Toyota Sprinter Trueno AE86"])
+car_scenes = Array[PackedScene]([ExtResource("10_f250g"), ExtResource("11_ae86x"), ExtResource("19_autocartoons")])
+car_names = Array[String](["1962 Ferrari 250 GTO", "1985 Toyota Sprinter Trueno AE86", "Cartoon Sports Car"])
 
 [node name="MusicPlayer" type="Node" parent="." unique_id=196202761 node_paths=PackedStringArray("audio_player")]
 script = ExtResource("8_o3c81")

@@ -3,6 +3,7 @@ extends Node3D
 @export var rotation_speed: float = 5.0
 @export var auto_rotate: bool = true
 @export var target_car_size: float = 3.8
+@export var car_size_overrides: Dictionary[String, float] = {}
 
 var current_car: Node = null
 @onready var car_mount: Node3D = $CarMount
@@ -69,7 +70,9 @@ func _fit_car_to_stage(car_root: Node) -> void:
 	if max_extent <= 0.0001:
 		return
 
-	var scale_factor: float = target_car_size / max_extent
+	var base_scale_factor: float = target_car_size / max_extent
+	var size_multiplier: float = _get_size_multiplier(car_root)
+	var scale_factor: float = base_scale_factor * size_multiplier
 	var center: Vector3 = combined_aabb.position + combined_aabb.size * 0.5
 	var target_position: Vector3 = Vector3(-center.x, -combined_aabb.position.y, -center.z) * scale_factor
 
@@ -84,6 +87,14 @@ func _fit_car_to_stage(car_root: Node) -> void:
 	else:
 		car_node.scale = Vector3.ONE * scale_factor
 		car_node.position = target_position
+
+func _get_size_multiplier(car_root: Node) -> float:
+	var scene_path: String = car_root.scene_file_path
+	if scene_path.is_empty():
+		return 1.0
+
+	var override_value: float = car_size_overrides.get(scene_path, 1.0) as float
+	return maxf(override_value, 0.01)
 
 func _collect_mesh_nodes(node: Node, result: Array[MeshInstance3D]) -> void:
 	if node is MeshInstance3D:
