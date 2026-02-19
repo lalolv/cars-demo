@@ -18,6 +18,15 @@ extends CharacterBody3D
 @export var front_wheel_visual_node: Node3D
 @export var back_wheel_visual_name: StringName = &"backWheel_low"
 @export var front_wheel_visual_name: StringName = &"frontWheel_low"
+@export var brush_left_node: Node3D
+@export var brush_right_node: Node3D
+@export var brush_left_name: StringName = &"brushLeft"
+@export var brush_right_name: StringName = &"brushRight"
+@export var brush_spin_axis_local: Vector3 = Vector3.UP
+@export var brush_spin_speed: float = 12.0
+@export var brush_spin_min_move_speed: float = 0.05
+@export var brush_left_spin_multiplier: float = 1.0
+@export var brush_right_spin_multiplier: float = -1.0
 @export var wheel_radius: float = 0.06
 @export var wheel_spin_axis_local: Vector3 = Vector3.RIGHT
 @export var wheel_spin_multiplier: float = 1.0
@@ -38,6 +47,7 @@ var _repath_cooldown_left: float = 0.0
 var _moving_animation_ready: bool = false
 
 func _ready() -> void:
+	process_priority = 100
 	_rng.randomize()
 	_origin = global_position
 	_ground_y = global_position.y
@@ -67,6 +77,20 @@ func _ready() -> void:
 		else:
 			push_warning("AutonomousRobotSweeper: front_wheel_visual_node is not assigned and '%s' was not found." % String(front_wheel_visual_name))
 
+	if brush_left_node == null:
+		var found_brush_left: Node = _find_descendant_by_name(model_root, brush_left_name)
+		if found_brush_left is Node3D:
+			brush_left_node = found_brush_left as Node3D
+		else:
+			push_warning("AutonomousRobotSweeper: brush_left_node is not assigned and '%s' was not found." % String(brush_left_name))
+
+	if brush_right_node == null:
+		var found_brush_right: Node = _find_descendant_by_name(model_root, brush_right_name)
+		if found_brush_right is Node3D:
+			brush_right_node = found_brush_right as Node3D
+		else:
+			push_warning("AutonomousRobotSweeper: brush_right_node is not assigned and '%s' was not found." % String(brush_right_name))
+
 	if model_animation_player == null:
 		var found_animation_player: Node = model_root.find_child("AnimationPlayer", true, false)
 		if found_animation_player is AnimationPlayer:
@@ -89,6 +113,9 @@ func _ready() -> void:
 
 	_navigation_ready = true
 	_pick_next_target()
+
+func _process(delta: float) -> void:
+	_update_brush_spin(delta)
 
 func _physics_process(delta: float) -> void:
 	if not _navigation_ready:
@@ -257,6 +284,31 @@ func _update_moving_animation() -> void:
 func _update_visual_motion(delta: float) -> void:
 	_update_back_wheel_spin(delta)
 	_update_moving_animation()
+
+func _update_brush_spin(delta: float) -> void:
+	if brush_left_node == null and brush_right_node == null:
+		return
+
+	var axis: Vector3 = brush_spin_axis_local
+	if axis.length_squared() <= 0.0001:
+		return
+	axis = axis.normalized()
+	var axis_world: Vector3 = global_transform.basis * axis
+	if axis_world.length_squared() <= 0.0001:
+		return
+	axis_world = axis_world.normalized()
+
+	var planar_velocity: Vector3 = velocity
+	planar_velocity.y = 0.0
+	var speed: float = planar_velocity.length()
+	if speed < brush_spin_min_move_speed:
+		return
+
+	var angle: float = brush_spin_speed * delta
+	if brush_left_node != null:
+		brush_left_node.global_rotate(axis_world, angle * brush_left_spin_multiplier)
+	if brush_right_node != null:
+		brush_right_node.global_rotate(axis_world, angle * brush_right_spin_multiplier)
 
 func _spin_wheel_around_pivot(wheel_node: Node3D, pivot_node: Node3D, axis_world: Vector3, spin_angle: float) -> void:
 	if wheel_node == null or pivot_node == null:
