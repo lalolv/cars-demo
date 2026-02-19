@@ -21,6 +21,10 @@ extends CharacterBody3D
 @export var wheel_radius: float = 0.06
 @export var wheel_spin_axis_local: Vector3 = Vector3.RIGHT
 @export var wheel_spin_multiplier: float = 1.0
+@export var model_animation_player: AnimationPlayer
+@export var moving_animation_name: StringName = &"Scene"
+@export var moving_animation_min_speed: float = 0.05
+@export var moving_animation_speed_scale: float = 1.0
 
 @onready var navigation_agent: NavigationAgent3D = $NavigationAgent3D
 @onready var model_root: Node = $Model
@@ -31,6 +35,7 @@ var _ground_y: float = 0.0
 var _idle_timer: float = 0.0
 var _navigation_ready: bool = false
 var _repath_cooldown_left: float = 0.0
+var _moving_animation_ready: bool = false
 
 func _ready() -> void:
 	_rng.randomize()
@@ -62,6 +67,23 @@ func _ready() -> void:
 		else:
 			push_warning("AutonomousRobotSweeper: front_wheel_visual_node is not assigned and '%s' was not found." % String(front_wheel_visual_name))
 
+	if model_animation_player == null:
+		var found_animation_player: Node = model_root.find_child("AnimationPlayer", true, false)
+		if found_animation_player is AnimationPlayer:
+			model_animation_player = found_animation_player as AnimationPlayer
+
+	if model_animation_player != null:
+		var moving_animation: Animation = model_animation_player.get_animation(moving_animation_name)
+		if moving_animation != null:
+			moving_animation.loop_mode = Animation.LOOP_LINEAR
+			model_animation_player.play(moving_animation_name)
+			model_animation_player.speed_scale = 0.0
+			_moving_animation_ready = true
+		else:
+			push_warning("AutonomousRobotSweeper: animation not found: %s" % String(moving_animation_name))
+	else:
+		push_warning("AutonomousRobotSweeper: model_animation_player is not assigned and AnimationPlayer was not found under Model.")
+
 	if not _has_navigation_map():
 		return
 
@@ -84,7 +106,7 @@ func _physics_process(delta: float) -> void:
 		velocity = velocity.move_toward(Vector3.ZERO, acceleration * delta)
 		move_and_slide()
 		_lock_ground_height()
-		_update_back_wheel_spin(delta)
+		_update_visual_motion(delta)
 		if _idle_timer <= 0.0:
 			_pick_next_target()
 		return
@@ -92,6 +114,7 @@ func _physics_process(delta: float) -> void:
 	if navigation_agent.is_navigation_finished():
 		_idle_timer = _rng.randf_range(idle_time_min, idle_time_max)
 		velocity = Vector3.ZERO
+		_update_visual_motion(delta)
 		return
 
 	var next_position: Vector3 = navigation_agent.get_next_path_position()
@@ -102,7 +125,7 @@ func _physics_process(delta: float) -> void:
 		velocity = velocity.move_toward(Vector3.ZERO, acceleration * delta)
 		move_and_slide()
 		_lock_ground_height()
-		_update_back_wheel_spin(delta)
+		_update_visual_motion(delta)
 		return
 
 	var desired_velocity: Vector3 = to_next.normalized() * move_speed
@@ -116,7 +139,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_lock_ground_height()
 	_handle_blocking_collision()
-	_update_back_wheel_spin(delta)
+	_update_visual_motion(delta)
 
 func _pick_next_target() -> void:
 	for _attempt in range(max_target_attempts):
@@ -213,6 +236,27 @@ func _update_back_wheel_spin(delta: float) -> void:
 	var spin_angle: float = angular_speed * delta
 	_spin_wheel_around_pivot(back_wheel_visual_node, back_wheel_node, axis_world, spin_angle)
 	_spin_wheel_around_pivot(front_wheel_visual_node, front_wheel_node, axis_world, spin_angle)
+
+func _update_moving_animation() -> void:
+	if not _moving_animation_ready or model_animation_player == null:
+		return
+
+	if model_animation_player.current_animation != moving_animation_name or not model_animation_player.is_playing():
+		model_animation_player.play(moving_animation_name)
+
+	var planar_velocity: Vector3 = velocity
+	planar_velocity.y = 0.0
+	var speed: float = planar_velocity.length()
+	if speed < moving_animation_min_speed:
+		model_animation_player.speed_scale = 0.0
+		return
+
+	var base_speed: float = maxf(move_speed, 0.01)
+	model_animation_player.speed_scale = (speed / base_speed) * moving_animation_speed_scale
+
+func _update_visual_motion(delta: float) -> void:
+	_update_back_wheel_spin(delta)
+	_update_moving_animation()
 
 func _spin_wheel_around_pivot(wheel_node: Node3D, pivot_node: Node3D, axis_world: Vector3, spin_angle: float) -> void:
 	if wheel_node == null or pivot_node == null:
