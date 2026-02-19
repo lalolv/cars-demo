@@ -230,11 +230,16 @@ shape = SubResource("CylinderShape3D_sweeper_blocker")
 [node name="GuideRobot" parent="NPCs" unique_id=390918499 instance=ExtResource("20_guide_robot")]
 transform = Transform3D(0.2995918, 0, -0.51985073, 0, 0.6, 0, 0.51985073, 0, 0.2995918, -3.3846335, 0.28151947, 0.98103344)
 
-[node name="AutonomousRobotSweeper" parent="NPCs" unique_id=1147134008 instance=ExtResource("21_sweeper")]
+[node name="AutonomousRobotSweeper" parent="NPCs" unique_id=1147134008 node_paths=PackedStringArray("back_wheel_node", "front_wheel_node", "back_wheel_visual_node", "front_wheel_visual_node") instance=ExtResource("21_sweeper")]
 transform = Transform3D(1.7931504, 0, -0.1568803, 0, 1.8, 0, 0.1568803, 0, 1.7931504, 4.4, 0, 2.8)
 move_speed = 0.6
 acceleration = 2.0
 turn_speed = 2.0
+back_wheel_node = NodePath("Model/Sketchfab_model/64d1ef9beccb46059d069faacb3fa6fa_fbx/Object_2/RootNode/BackWheelPivot")
+front_wheel_node = NodePath("Model/Sketchfab_model/64d1ef9beccb46059d069faacb3fa6fa_fbx/Object_2/RootNode/FrontWheelPivot")
+back_wheel_visual_node = NodePath("Model/Sketchfab_model/64d1ef9beccb46059d069faacb3fa6fa_fbx/Object_2/RootNode/backWheel_low")
+front_wheel_visual_node = NodePath("Model/Sketchfab_model/64d1ef9beccb46059d069faacb3fa6fa_fbx/Object_2/RootNode/frontWheel_low")
+wheel_spin_multiplier = -1.0
 
 [node name="FloorOuter" type="MeshInstance3D" parent="." unique_id=737577889]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.14, 0)
@@ -673,3 +678,6 @@ value = 0.8
 [node name="AudioVisualizer" type="Node" parent="." unique_id=261673062 node_paths=PackedStringArray("stage_platform")]
 script = ExtResource("6_tipki")
 stage_platform = NodePath("../Stage/Platform")
+
+[editable path="NPCs/AutonomousRobotSweeper"]
+[editable path="NPCs/AutonomousRobotSweeper/Model"]

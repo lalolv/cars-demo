@@ -1,15 +1,15 @@
 [gd_scene format=3 uid="uid://yyf735xryrce"]
 
 [ext_resource type="PackedScene" uid="uid://dxhgajg2ucoyg" path="res://assets/models/autonomous_robot_sweeper/autonomous_robot_sweeper.glb" id="1_model"]
-[ext_resource type="Script" path="res://scripts/autonomous_robot_sweeper.gd" id="2_script"]
+[ext_resource type="Script" uid="uid://dcb2437q0nkwq" path="res://scripts/autonomous_robot_sweeper.gd" id="2_script"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_body"]
 height = 0.18
 radius = 0.26
 
 [node name="AutonomousRobotSweeper" type="CharacterBody3D" unique_id=973016407]
-script = ExtResource("2_script")
 collision_mask = 9
+script = ExtResource("2_script")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1104165311]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09, 0)
@@ -30,5 +30,11 @@ transform = Transform3D(-0.9977803, 0.06659288, 9.422995e-16, -0.06659289, -0.99
 
 [node name="Armature_002" parent="Model/Sketchfab_model/64d1ef9beccb46059d069faacb3fa6fa_fbx/Object_2/RootNode/spinnigLight2" parent_id_path=PackedInt32Array(169141376, 632011907) index="0" unique_id=1982050465]
 transform = Transform3D(-0.9977803, 0.06659289, -7.506317e-09, -0.06659289, -0.9977803, -2.200495e-08, -8.955029e-09, -2.145624e-08, 1, -4.440892e-16, -0.02772808, -1.9073486e-06)
+
+[node name="BackWheelPivot" type="Node3D" parent="Model/Sketchfab_model/64d1ef9beccb46059d069faacb3fa6fa_fbx/Object_2/RootNode" parent_id_path=PackedInt32Array(169141376, 767434196) index="17" unique_id=316288113]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 25, -115.976875)
+
+[node name="FrontWheelPivot" type="Node3D" parent="Model/Sketchfab_model/64d1ef9beccb46059d069faacb3fa6fa_fbx/Object_2/RootNode" parent_id_path=PackedInt32Array(169141376, 767434196) index="18" unique_id=870929126]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 25, 12)
 
 [editable path="Model"]

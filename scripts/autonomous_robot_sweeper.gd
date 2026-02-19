@@ -12,8 +12,18 @@ extends CharacterBody3D
 @export var blocked_pause_min: float = 0.2
 @export var blocked_pause_max: float = 0.5
 @export var repath_cooldown: float = 0.25
+@export var back_wheel_node: Node3D
+@export var front_wheel_node: Node3D
+@export var back_wheel_visual_node: Node3D
+@export var front_wheel_visual_node: Node3D
+@export var back_wheel_visual_name: StringName = &"backWheel_low"
+@export var front_wheel_visual_name: StringName = &"frontWheel_low"
+@export var wheel_radius: float = 0.06
+@export var wheel_spin_axis_local: Vector3 = Vector3.RIGHT
+@export var wheel_spin_multiplier: float = 1.0
 
 @onready var navigation_agent: NavigationAgent3D = $NavigationAgent3D
+@onready var model_root: Node = $Model
 
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _origin: Vector3 = Vector3.ZERO
@@ -31,6 +41,26 @@ func _ready() -> void:
 	navigation_agent.target_desired_distance = 0.28
 	navigation_agent.avoidance_enabled = true
 	navigation_agent.max_speed = move_speed
+
+	if back_wheel_node == null:
+		push_warning("AutonomousRobotSweeper: back_wheel_node is not assigned. Please bind BackWheelPivot.")
+
+	if front_wheel_node == null:
+		push_warning("AutonomousRobotSweeper: front_wheel_node is not assigned. Please bind FrontWheelPivot.")
+
+	if back_wheel_visual_node == null:
+		var found_back_visual: Node = _find_descendant_by_name(model_root, back_wheel_visual_name)
+		if found_back_visual is Node3D:
+			back_wheel_visual_node = found_back_visual as Node3D
+		else:
+			push_warning("AutonomousRobotSweeper: back_wheel_visual_node is not assigned and '%s' was not found." % String(back_wheel_visual_name))
+
+	if front_wheel_visual_node == null:
+		var found_front_visual: Node = _find_descendant_by_name(model_root, front_wheel_visual_name)
+		if found_front_visual is Node3D:
+			front_wheel_visual_node = found_front_visual as Node3D
+		else:
+			push_warning("AutonomousRobotSweeper: front_wheel_visual_node is not assigned and '%s' was not found." % String(front_wheel_visual_name))
 
 	if not _has_navigation_map():
 		return
@@ -54,6 +84,7 @@ func _physics_process(delta: float) -> void:
 		velocity = velocity.move_toward(Vector3.ZERO, acceleration * delta)
 		move_and_slide()
 		_lock_ground_height()
+		_update_back_wheel_spin(delta)
 		if _idle_timer <= 0.0:
 			_pick_next_target()
 		return
@@ -71,6 +102,7 @@ func _physics_process(delta: float) -> void:
 		velocity = velocity.move_toward(Vector3.ZERO, acceleration * delta)
 		move_and_slide()
 		_lock_ground_height()
+		_update_back_wheel_spin(delta)
 		return
 
 	var desired_velocity: Vector3 = to_next.normalized() * move_speed
@@ -84,6 +116,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_lock_ground_height()
 	_handle_blocking_collision()
+	_update_back_wheel_spin(delta)
 
 func _pick_next_target() -> void:
 	for _attempt in range(max_target_attempts):
@@ -144,3 +177,66 @@ func _pick_detour_target(hit_normal: Vector3) -> void:
 		navigation_agent.target_position = nearest_point
 	else:
 		_pick_next_target()
+
+func _update_back_wheel_spin(delta: float) -> void:
+	if back_wheel_node == null and front_wheel_node == null:
+		return
+
+	var axis: Vector3 = wheel_spin_axis_local
+	if axis.length_squared() <= 0.0001:
+		return
+	axis = axis.normalized()
+	var axis_world: Vector3 = global_transform.basis * axis
+	if axis_world.length_squared() <= 0.0001:
+		return
+	axis_world = axis_world.normalized()
+
+	var planar_velocity: Vector3 = velocity
+	planar_velocity.y = 0.0
+	var speed: float = planar_velocity.length()
+	if speed < 0.01:
+		return
+
+	var forward: Vector3 = -global_transform.basis.z
+	forward.y = 0.0
+	if forward.length_squared() <= 0.0001:
+		return
+	forward = forward.normalized()
+
+	var velocity_dir: Vector3 = planar_velocity.normalized()
+	var dir_sign: float = signf(forward.dot(velocity_dir))
+	if dir_sign == 0.0:
+		dir_sign = 1.0
+
+	var safe_radius: float = maxf(wheel_radius, 0.001)
+	var angular_speed: float = (speed / safe_radius) * dir_sign * wheel_spin_multiplier
+	var spin_angle: float = angular_speed * delta
+	_spin_wheel_around_pivot(back_wheel_visual_node, back_wheel_node, axis_world, spin_angle)
+	_spin_wheel_around_pivot(front_wheel_visual_node, front_wheel_node, axis_world, spin_angle)
+
+func _spin_wheel_around_pivot(wheel_node: Node3D, pivot_node: Node3D, axis_world: Vector3, spin_angle: float) -> void:
+	if wheel_node == null or pivot_node == null:
+		return
+
+	var pivot_origin: Vector3 = pivot_node.global_position
+	var current_transform: Transform3D = wheel_node.global_transform
+	var offset: Vector3 = current_transform.origin - pivot_origin
+	var rotation_basis: Basis = Basis(axis_world, spin_angle)
+
+	offset = offset.rotated(axis_world, spin_angle)
+	current_transform.origin = pivot_origin + offset
+	current_transform.basis = rotation_basis * current_transform.basis
+	wheel_node.global_transform = current_transform
+
+func _find_descendant_by_name(root: Node, target_name: StringName) -> Node:
+	if root == null:
+		return null
+	if root.name == target_name:
+		return root
+
+	for child in root.get_children():
+		var found: Node = _find_descendant_by_name(child, target_name)
+		if found != null:
+			return found
+
+	return null
