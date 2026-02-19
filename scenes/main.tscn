@@ -20,6 +20,7 @@
 [ext_resource type="Shader" uid="uid://d20kflr2lh05p" path="res://shaders/floor_tiles.gdshader" id="18_floor_tiles"]
 [ext_resource type="PackedScene" path="res://scenes/cars/cartoon_sports_car.tscn" id="19_autocartoons"]
 [ext_resource type="PackedScene" path="res://scenes/npcs/toy_robot_domowik.tscn" id="20_guide_robot"]
+[ext_resource type="PackedScene" uid="uid://yyf735xryrce" path="res://scenes/npcs/autonomous_robot_sweeper.tscn" id="21_sweeper"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sgp6g"]
 
@@ -67,6 +68,10 @@ height = 0.15
 height = 0.15
 radius = 2.2
 
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_sweeper_blocker"]
+height = 0.4
+radius = 2.28
+
 [sub_resource type="ShaderMaterial" id="ShaderMaterial3D_floor_tiles"]
 render_priority = 0
 shader = ExtResource("18_floor_tiles")
@@ -89,6 +94,10 @@ shader_parameter/roughness_value = 0.44
 top_radius = 14.0
 bottom_radius = 14.0
 height = 0.06
+
+[sub_resource type="NavigationMesh" id="NavigationMesh_showroom_nav"]
+vertices = PackedVector3Array(-12.8, 0, -12.8, 12.8, 0, -12.8, 12.8, 0, 12.8, -12.8, 0, 12.8)
+polygons = [PackedInt32Array(0, 1, 2), PackedInt32Array(0, 2, 3)]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_shell_wall_left"]
 albedo_color = Color(0.75, 0.78, 0.84, 1)
@@ -209,10 +218,23 @@ shape = SubResource("CylinderShape3D_jyhfs")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 size = Vector3(8, 4.5, 8)
 
+[node name="SweeperPlatformBlocker" type="StaticBody3D" parent="Stage" unique_id=427007199]
+collision_layer = 8
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Stage/SweeperPlatformBlocker" unique_id=1673090814]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+shape = SubResource("CylinderShape3D_sweeper_blocker")
+
 [node name="NPCs" type="Node3D" parent="." unique_id=310794310]
 
 [node name="GuideRobot" parent="NPCs" unique_id=390918499 instance=ExtResource("20_guide_robot")]
-transform = Transform3D(0.49931967, 0, -0.86641777, 0, 1, 0, 0.86641777, 0, 0.49931967, -3.3846335, 0.28151947, 0.98103344)
+transform = Transform3D(0.2995918, 0, -0.51985073, 0, 0.6, 0, 0.51985073, 0, 0.2995918, -3.3846335, 0.28151947, 0.98103344)
+
+[node name="AutonomousRobotSweeper" parent="NPCs" unique_id=1147134008 instance=ExtResource("21_sweeper")]
+transform = Transform3D(1.7931504, 0, -0.1568803, 0, 1.8, 0, 0.1568803, 0, 1.7931504, 4.4, 0, 2.8)
+move_speed = 0.6
+acceleration = 2.0
+turn_speed = 2.0
 
 [node name="FloorOuter" type="MeshInstance3D" parent="." unique_id=737577889]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.14, 0)
@@ -223,6 +245,9 @@ mesh = SubResource("CylinderMesh_floor_outer")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.4, 0)
 intensity = 0.82
 size = Vector3(30, 8, 30)
+
+[node name="ShowroomNavigation" type="NavigationRegion3D" parent="." unique_id=1493176624]
+navigation_mesh = SubResource("NavigationMesh_showroom_nav")
 
 [node name="ShowroomShell" type="Node3D" parent="." unique_id=1834233666]
 

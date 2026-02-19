@@ -1,28 +1,28 @@
 extends Node3D
 
-@onready var car_manager: Node = $CarManager
-@onready var music_player: Node = $MusicPlayer
-@onready var world_environment: WorldEnvironment = $WorldEnvironment
-@onready var directional_light: DirectionalLight3D = $DirectionalLight3D
-@onready var lighting_rig: Node3D = $LightingRig
-@onready var ambient_lights_root: Node3D = $AmbientLights
-@onready var light_pillars: Node3D = $LightPillars
-@onready var play_pause_button: Button = $CanvasLayer/MainUI/TopBar/PlayPauseButton
-@onready var music_selector: OptionButton = $CanvasLayer/MainUI/TopBar/MusicSelector
-@onready var car_selector: OptionButton = $CanvasLayer/MainUI/TopBar/CarSelector
-@onready var screen_toggle_button: Button = $CanvasLayer/MainUI/TopBar/ScreenToggleButton
-@onready var slide_interval_slider: HSlider = $CanvasLayer/MainUI/TopBar/SlideIntervalSlider
-@onready var wall_promo_toggle_button: Button = $CanvasLayer/MainUI/TopBar/WallPromoToggleButton
-@onready var base_lights_toggle: CheckButton = $CanvasLayer/MainUI/LightingPanel/LightingVBox/BaseLightsToggle
-@onready var car_lights_toggle: CheckButton = $CanvasLayer/MainUI/LightingPanel/LightingVBox/CarLightsToggle
-@onready var ambient_lights_toggle: CheckButton = $CanvasLayer/MainUI/LightingPanel/LightingVBox/AmbientLightsToggle
-@onready var lighting_mode_selector: OptionButton = $CanvasLayer/MainUI/LightingPanel/LightingVBox/LightingModeSelector
-@onready var env_intensity_slider: HSlider = $CanvasLayer/MainUI/LightingPanel/LightingVBox/EnvIntensitySlider
-@onready var back_screen_root: Node3D = $BackScreenRoot
-@onready var spec_poster_panel: MeshInstance3D = $BackScreenRoot/SpecWall/SpecPosterPanel
-@onready var left_wing_poster_panel: MeshInstance3D = $BackScreenRoot/LeftWingWall/LeftWingPoster
-@onready var right_wing_poster_panel: MeshInstance3D = $BackScreenRoot/RightWingWall/RightWingPoster
-@onready var screen_slideshow: Node = $BackScreenRoot/ScreenSlideshow
+var car_manager: Node
+var music_player: Node
+var world_environment: WorldEnvironment
+var directional_light: DirectionalLight3D
+var lighting_rig: Node3D
+var ambient_lights_root: Node3D
+var light_pillars: Node3D
+var play_pause_button: Button
+var music_selector: OptionButton
+var car_selector: OptionButton
+var screen_toggle_button: Button
+var slide_interval_slider: HSlider
+var wall_promo_toggle_button: Button
+var base_lights_toggle: CheckButton
+var car_lights_toggle: CheckButton
+var ambient_lights_toggle: CheckButton
+var lighting_mode_selector: OptionButton
+var env_intensity_slider: HSlider
+var back_screen_root: Node3D
+var spec_poster_panel: MeshInstance3D
+var left_wing_poster_panel: MeshInstance3D
+var right_wing_poster_panel: MeshInstance3D
+var screen_slideshow: Node
 
 @export var spec_poster_texture: Texture2D = preload("res://assets/slides/slide_02.png")
 @export var left_wing_poster_texture: Texture2D = preload("res://assets/slides/slide_03.png")
@@ -45,6 +45,7 @@ var _base_background_energy: float = 1.0
 var _promo_panels: Array[MeshInstance3D] = []
 
 func _ready() -> void:
+	_cache_nodes()
 	_setup_selectors()
 	_connect_ui_signals()
 	_connect_manager_signals()
@@ -53,6 +54,31 @@ func _ready() -> void:
 	_setup_showroom_controls()
 	_setup_lighting_controls()
 	_refresh_play_pause_text()
+
+func _cache_nodes() -> void:
+	car_manager = get_node_or_null("CarManager")
+	music_player = get_node_or_null("MusicPlayer")
+	world_environment = get_node_or_null("WorldEnvironment") as WorldEnvironment
+	directional_light = get_node_or_null("DirectionalLight3D") as DirectionalLight3D
+	lighting_rig = get_node_or_null("LightingRig") as Node3D
+	ambient_lights_root = get_node_or_null("AmbientLights") as Node3D
+	light_pillars = get_node_or_null("LightPillars") as Node3D
+	play_pause_button = get_node_or_null("CanvasLayer/MainUI/TopBar/PlayPauseButton") as Button
+	music_selector = get_node_or_null("CanvasLayer/MainUI/TopBar/MusicSelector") as OptionButton
+	car_selector = get_node_or_null("CanvasLayer/MainUI/TopBar/CarSelector") as OptionButton
+	screen_toggle_button = get_node_or_null("CanvasLayer/MainUI/TopBar/ScreenToggleButton") as Button
+	slide_interval_slider = get_node_or_null("CanvasLayer/MainUI/TopBar/SlideIntervalSlider") as HSlider
+	wall_promo_toggle_button = get_node_or_null("CanvasLayer/MainUI/TopBar/WallPromoToggleButton") as Button
+	base_lights_toggle = get_node_or_null("CanvasLayer/MainUI/LightingPanel/LightingVBox/BaseLightsToggle") as CheckButton
+	car_lights_toggle = get_node_or_null("CanvasLayer/MainUI/LightingPanel/LightingVBox/CarLightsToggle") as CheckButton
+	ambient_lights_toggle = get_node_or_null("CanvasLayer/MainUI/LightingPanel/LightingVBox/AmbientLightsToggle") as CheckButton
+	lighting_mode_selector = get_node_or_null("CanvasLayer/MainUI/LightingPanel/LightingVBox/LightingModeSelector") as OptionButton
+	env_intensity_slider = get_node_or_null("CanvasLayer/MainUI/LightingPanel/LightingVBox/EnvIntensitySlider") as HSlider
+	back_screen_root = get_node_or_null("BackScreenRoot") as Node3D
+	spec_poster_panel = get_node_or_null("BackScreenRoot/SpecWall/SpecPosterPanel") as MeshInstance3D
+	left_wing_poster_panel = get_node_or_null("BackScreenRoot/LeftWingWall/LeftWingPoster") as MeshInstance3D
+	right_wing_poster_panel = get_node_or_null("BackScreenRoot/RightWingWall/RightWingPoster") as MeshInstance3D
+	screen_slideshow = get_node_or_null("BackScreenRoot/ScreenSlideshow")
 
 func _setup_selectors() -> void:
 	car_selector.clear()
