@@ -42,9 +42,9 @@ var car_lights_toggle: CheckButton
 var ambient_lights_toggle: CheckButton
 var lighting_mode_selector: OptionButton
 var env_intensity_slider: HSlider
-var guide_chat_history: RichTextLabel
-var guide_chat_input: LineEdit
-var guide_send_button: Button
+var guide_speaker_label: Label
+var guide_dialogue_text: RichTextLabel
+var guide_continue_hint: Label
 var back_screen_root: Node3D
 var spec_poster_panel: MeshInstance3D
 var left_wing_poster_panel: MeshInstance3D
@@ -54,6 +54,59 @@ var screen_slideshow: Node
 @export var spec_poster_texture: Texture2D = preload("res://assets/slides/slide_02.png")
 @export var left_wing_poster_texture: Texture2D = preload("res://assets/slides/slide_03.png")
 @export var right_wing_poster_texture: Texture2D = preload("res://assets/slides/slide_01.png")
+
+const TYPING_CHARS_PER_SEC: float = 28.0
+
+const _GUIDE_TOPICS: Array = [
+	{
+		"speaker": "导游机器人",
+		"lines": [
+			"1885年，德国工程师卡尔·本茨造出了人类史上第一辆汽油动力汽车——「奔驰一号」，一台三轮车，搭载了仅0.75马力的单缸发动机。",
+			"本茨的妻子贝塔才是真正的第一位长途驾驶者。她瞒着丈夫独自驾车跑完106公里，途中用帽针疏通了堵塞的油管。",
+			"如今全球汽车年产量超过8000万辆。那辆改变世界的三轮车，拍卖价已超过百万欧元。",
+		]
+	},
+	{
+		"speaker": "导游机器人",
+		"lines": [
+			"法拉利创始人恩佐·法拉利曾是赛车手，1929年以车队经理身份为阿尔法·罗密欧效力，梦想着有朝一日造出属于自己的赛车。",
+			"1947年，第一辆「法拉利」诞生：125 S，V12发动机，首次亮相的比赛中途抛锚退场——然后赢得了下一场。",
+			"展厅里这辆1962年的250 GTO，全球仅生产36辆，是法拉利史上最珍贵的量产赛车，拍卖纪录超过4800万美元。",
+		]
+	},
+	{
+		"speaker": "导游机器人",
+		"lines": [
+			"AE86——丰田卡罗拉Sprinter Trueno的代号，1983年诞生，搭载4A-GE双凸轮轴发动机，自重仅约940公斤，是轻量化操控的典范。",
+			"它本是一辆普通的轻量级跑车，却因「头文字D」漫画和动画而成为传奇。那辆「藤原豆腐店」的白色AE86让秋名山家喻户晓。",
+			"如今保存完好的AE86市场价已是新车时的数倍，成为日本JDM文化中不可取代的符号。",
+		]
+	},
+	{
+		"speaker": "导游机器人",
+		"lines": [
+			"内燃机的原理只有四步：吸气、压缩、点火、排气。这四个冲程，以每分钟数千次的节奏，让金属与燃料共同起舞。",
+			"V12发动机是工程美学的象征——12个气缸分成两排，以60°夹角排列，运转极其平顺，发出最纯粹的机械音律。这正是法拉利的执念。",
+			"一台现代高性能发动机超过2000个零件，从毫克级轻合金活塞到精密油路，每一处公差都在微米级别内被严格控制。",
+		]
+	},
+	{
+		"speaker": "导游机器人",
+		"lines": [
+			"一级方程式赛车是汽车工程的极限场所。现代F1赛车过弯时产生超过5G的下压力，理论上可以贴着隧道顶部行驶。",
+			"赛场上诞生的技术，最终流向了量产车：碳纤维车身、双离合变速箱、动能回收制动……你的日常座驾里藏着赛道的基因。",
+			"勒芒24小时耐力赛是汽车运动的圣杯。一辆赛车需在24小时内跑完约5000公里——相当于从北京驾车到拉萨再返回。",
+		]
+	},
+	{
+		"speaker": "导游机器人",
+		"lines": [
+			"好的车身线条必须会「呼吸」。流线型不只是视觉语言，它决定空气如何绕过车身，直接影响高速稳定性与燃油经济性。",
+			"「法拉利红」有专属色值。那不只是一种颜色，而是一种情感编码——速度、激情与意大利精神凝结在一个色号里。",
+			"亨利·福特的T型车只有黑色，因为黑漆干燥最快，能加快流水线节拍。「任何颜色都行，只要是黑的」——这句话改变了汽车工业。",
+		]
+	},
+]
 
 const LIGHT_TWEEN_DURATION: float = 0.3
 const LIGHTING_MODE_PRESENTATION: int = 0
@@ -83,11 +136,15 @@ var _promo_panels: Array[MeshInstance3D] = []
 var _stage_car_buttons: Array[Button] = []
 var _camera_tween: Tween
 var _saved_default_camera_transform: Transform3D = Transform3D.IDENTITY
-var _guide_greeting_sent: bool = false
+var _dialogue_lines: Array[String] = []
+var _dialogue_index: int = 0
+var _dialogue_typing: bool = false
+var _typing_tween: Tween
 var _sweeper_follow_active: bool = false
 
 func _ready() -> void:
 	_cache_nodes()
+	_style_guide_dialogue()
 	_setup_selectors()
 	_connect_ui_signals()
 	_connect_manager_signals()
@@ -151,14 +208,69 @@ func _cache_nodes() -> void:
 	ambient_lights_toggle = get_node_or_null("CanvasLayer/MainUI/DefaultPanel/LightingPanel/LightingVBox/AmbientLightsToggle") as CheckButton
 	lighting_mode_selector = get_node_or_null("CanvasLayer/MainUI/DefaultPanel/LightingPanel/LightingVBox/LightingModeSelector") as OptionButton
 	env_intensity_slider = get_node_or_null("CanvasLayer/MainUI/DefaultPanel/LightingPanel/LightingVBox/EnvIntensitySlider") as HSlider
-	guide_chat_history = get_node_or_null("CanvasLayer/MainUI/GuidePanel/ChatPanel/ChatVBox/ChatHistory") as RichTextLabel
-	guide_chat_input = get_node_or_null("CanvasLayer/MainUI/GuidePanel/ChatPanel/ChatVBox/InputRow/ChatInput") as LineEdit
-	guide_send_button = get_node_or_null("CanvasLayer/MainUI/GuidePanel/ChatPanel/ChatVBox/InputRow/SendButton") as Button
+	guide_speaker_label = get_node_or_null("CanvasLayer/MainUI/GuidePanel/DialogueBox/Margin/VBox/HeaderHBox/SpeakerLabel") as Label
+	guide_dialogue_text = get_node_or_null("CanvasLayer/MainUI/GuidePanel/DialogueBox/Margin/VBox/DialogueText") as RichTextLabel
+	guide_continue_hint = get_node_or_null("CanvasLayer/MainUI/GuidePanel/DialogueBox/Margin/VBox/ContinueHint") as Label
 	back_screen_root = get_node_or_null("BackScreenRoot") as Node3D
 	spec_poster_panel = get_node_or_null("BackScreenRoot/SpecWall/SpecPosterPanel") as MeshInstance3D
 	left_wing_poster_panel = get_node_or_null("BackScreenRoot/LeftWingWall/LeftWingPoster") as MeshInstance3D
 	right_wing_poster_panel = get_node_or_null("BackScreenRoot/RightWingWall/RightWingPoster") as MeshInstance3D
 	screen_slideshow = get_node_or_null("BackScreenRoot/ScreenSlideshow")
+
+func _style_guide_dialogue() -> void:
+	var dialogue_box := get_node_or_null("CanvasLayer/MainUI/GuidePanel/DialogueBox") as PanelContainer
+	if not dialogue_box:
+		return
+
+	# 科技感面板：极暗背景 + 左侧青色加粗边框 + 青蓝光晕
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.02, 0.04, 0.09, 0.96)
+	panel_style.border_width_left = 4
+	panel_style.border_width_top = 1
+	panel_style.border_width_right = 1
+	panel_style.border_width_bottom = 1
+	panel_style.border_color = Color(0.0, 0.82, 1.0, 0.85)
+	panel_style.set_corner_radius_all(4)
+	panel_style.shadow_color = Color(0.0, 0.60, 1.0, 0.50)
+	panel_style.shadow_size = 28
+	panel_style.shadow_offset = Vector2i(0, 4)
+	dialogue_box.add_theme_stylebox_override("panel", panel_style)
+
+	# 说话人：亮青色
+	if guide_speaker_label:
+		guide_speaker_label.add_theme_font_size_override("font_size", 22)
+		guide_speaker_label.add_theme_color_override("font_color", Color(0.0, 0.90, 1.0, 1.0))
+
+	# 对话文字：大字体，冷白色
+	if guide_dialogue_text:
+		guide_dialogue_text.add_theme_font_size_override("normal_font_size", 32)
+		guide_dialogue_text.add_theme_color_override("default_color", Color(0.88, 0.97, 1.0, 1.0))
+
+	# 继续提示：暗青色
+	if guide_continue_hint:
+		guide_continue_hint.add_theme_font_size_override("font_size", 18)
+		guide_continue_hint.add_theme_color_override("font_color", Color(0.0, 0.75, 1.0, 0.65))
+
+	# 头像：加载纹理 + 青色圆形边框着色器
+	var avatar_rect := get_node_or_null("CanvasLayer/MainUI/GuidePanel/DialogueBox/Margin/VBox/HeaderHBox/AvatarRect") as TextureRect
+	if avatar_rect:
+		avatar_rect.texture = load("res://assets/avatars/robot.png") as Texture2D
+		var shader := Shader.new()
+		shader.code = """shader_type canvas_item;
+uniform vec4 ring_color : source_color = vec4(0.0, 0.82, 1.0, 0.92);
+uniform float ring_width : hint_range(0.0, 0.15) = 0.055;
+void fragment() {
+\tvec2 c = UV - vec2(0.5);
+\tfloat d = length(c);
+\tfloat inside = step(d, 0.5);
+\tfloat in_ring = step(0.5 - ring_width, d) * inside;
+\tvec4 tex = texture(TEXTURE, UV);
+\tCOLOR = mix(tex, ring_color, in_ring);
+\tCOLOR.a *= inside;
+}"""
+		var mat := ShaderMaterial.new()
+		mat.shader = shader
+		avatar_rect.material = mat
 
 func _setup_selectors() -> void:
 	var cars: Array = []
@@ -211,11 +323,8 @@ func _connect_ui_signals() -> void:
 	if back_button and not back_button.pressed.is_connected(_on_back_pressed):
 		back_button.pressed.connect(_on_back_pressed)
 
-	if guide_send_button and not guide_send_button.pressed.is_connected(_on_guide_send_pressed):
-		guide_send_button.pressed.connect(_on_guide_send_pressed)
-
-	if guide_chat_input and not guide_chat_input.text_submitted.is_connected(_on_guide_text_submitted):
-		guide_chat_input.text_submitted.connect(_on_guide_text_submitted)
+	if guide_panel and not guide_panel.gui_input.is_connected(_on_guide_panel_input):
+		guide_panel.gui_input.connect(_on_guide_panel_input)
 
 func _connect_manager_signals() -> void:
 	if car_manager and car_manager.has_signal("car_changed") and not car_manager.is_connected("car_changed", _on_car_changed):
@@ -391,10 +500,7 @@ func _enter_guide_focus() -> void:
 	_set_ui_mode(FocusMode.GUIDE)
 
 	_move_camera_to_transform(_build_guide_focus_transform())
-
-	if not _guide_greeting_sent:
-		_append_chat_line("GuideRobot", "你好，欢迎来到展厅。点击发送可以开始问答。")
-		_guide_greeting_sent = true
+	_start_guide_dialogue()
 
 func _enter_sweeper_focus() -> void:
 	if _focus_mode == FocusMode.SWEEPER:
@@ -520,29 +626,64 @@ func _set_orbit_controls_enabled(enabled: bool) -> void:
 	else:
 		orbit_camera.set("controls_enabled", enabled)
 
-func _on_guide_send_pressed() -> void:
-	_send_guide_message()
+func _start_guide_dialogue() -> void:
+	var topic: Dictionary = _GUIDE_TOPICS[randi() % _GUIDE_TOPICS.size()]
+	_dialogue_lines = Array(topic.get("lines", []), TYPE_STRING, "", null)
+	_dialogue_index = 0
+	if guide_speaker_label:
+		guide_speaker_label.text = "◆  " + str(topic.get("speaker", "导游机器人"))
+	if not _dialogue_lines.is_empty():
+		_show_dialogue_line(0)
 
-func _on_guide_text_submitted(_text: String) -> void:
-	_send_guide_message()
-
-func _send_guide_message() -> void:
-	if not guide_chat_input:
+func _show_dialogue_line(index: int) -> void:
+	if not guide_dialogue_text or index >= _dialogue_lines.size():
 		return
 
-	var content: String = guide_chat_input.text.strip_edges()
-	if content.is_empty():
+	var line: String = _dialogue_lines[index]
+	guide_dialogue_text.text = line
+	guide_dialogue_text.visible_ratio = 0.0
+	if guide_continue_hint:
+		guide_continue_hint.visible = false
+
+	_dialogue_typing = true
+	if _typing_tween:
+		_typing_tween.kill()
+
+	var duration: float = maxf(line.length() / TYPING_CHARS_PER_SEC, 0.1)
+	_typing_tween = create_tween()
+	_typing_tween.tween_property(guide_dialogue_text, "visible_ratio", 1.0, duration)
+	_typing_tween.tween_callback(_on_typing_finished)
+
+func _on_typing_finished() -> void:
+	_dialogue_typing = false
+	if guide_continue_hint:
+		var is_last: bool = _dialogue_index >= _dialogue_lines.size() - 1
+		guide_continue_hint.text = "▼ 点击关闭" if is_last else "▼ 点击继续"
+		guide_continue_hint.visible = true
+
+func _on_guide_panel_input(event: InputEvent) -> void:
+	var clicked: bool = false
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		clicked = true
+	elif event is InputEventScreenTouch and event.pressed:
+		clicked = true
+	if clicked:
+		_on_dialogue_clicked()
+
+func _on_dialogue_clicked() -> void:
+	if _dialogue_typing:
+		if _typing_tween:
+			_typing_tween.kill()
+		if guide_dialogue_text:
+			guide_dialogue_text.visible_ratio = 1.0
+		_on_typing_finished()
 		return
 
-	_append_chat_line("You", content)
-	_append_chat_line("GuideRobot", "收到：%s" % content)
-	guide_chat_input.clear()
-
-func _append_chat_line(speaker: String, content: String) -> void:
-	if not guide_chat_history:
-		return
-
-	guide_chat_history.append_text("[b]%s:[/b] %s\n" % [speaker, content])
+	_dialogue_index += 1
+	if _dialogue_index < _dialogue_lines.size():
+		_show_dialogue_line(_dialogue_index)
+	else:
+		_return_to_default_focus()
 
 func _setup_showroom_controls() -> void:
 	if not screen_slideshow:

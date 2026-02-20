@@ -709,45 +709,64 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 0
+
+[node name="DialogueBox" type="PanelContainer" parent="CanvasLayer/MainUI/GuidePanel" unique_id=901000001]
+layout_mode = 0
+anchor_left = 0.14
+anchor_top = 1.0
+anchor_right = 0.86
+anchor_bottom = 1.0
+offset_top = -295.0
+offset_bottom = -28.0
 mouse_filter = 2
 
-[node name="ChatPanel" type="PanelContainer" parent="CanvasLayer/MainUI/GuidePanel" unique_id=153812192]
-layout_mode = 0
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -280.0
-offset_top = -300.0
-offset_right = 280.0
-offset_bottom = -28.0
-
-[node name="ChatVBox" type="VBoxContainer" parent="CanvasLayer/MainUI/GuidePanel/ChatPanel" unique_id=1841740840]
+[node name="Margin" type="MarginContainer" parent="CanvasLayer/MainUI/GuidePanel/DialogueBox" unique_id=901000002]
 layout_mode = 2
-theme_override_constants/separation = 8
+mouse_filter = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 26
+theme_override_constants/margin_bottom = 18
 
-[node name="ChatTitle" type="Label" parent="CanvasLayer/MainUI/GuidePanel/ChatPanel/ChatVBox" unique_id=746754092]
+[node name="VBox" type="VBoxContainer" parent="CanvasLayer/MainUI/GuidePanel/DialogueBox/Margin" unique_id=901000003]
 layout_mode = 2
-text = "GuideRobot Chat"
+mouse_filter = 2
+theme_override_constants/separation = 12
 
-[node name="ChatHistory" type="RichTextLabel" parent="CanvasLayer/MainUI/GuidePanel/ChatPanel/ChatVBox" unique_id=193418399]
-custom_minimum_size = Vector2(520, 180)
+[node name="HeaderHBox" type="HBoxContainer" parent="CanvasLayer/MainUI/GuidePanel/DialogueBox/Margin/VBox" unique_id=901000007]
 layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 14
+
+[node name="AvatarRect" type="TextureRect" parent="CanvasLayer/MainUI/GuidePanel/DialogueBox/Margin/VBox/HeaderHBox" unique_id=901000008]
+custom_minimum_size = Vector2(52, 52)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SpeakerLabel" type="Label" parent="CanvasLayer/MainUI/GuidePanel/DialogueBox/Margin/VBox/HeaderHBox" unique_id=901000004]
+layout_mode = 2
+size_flags_vertical = 8
+text = "导游机器人"
+
+[node name="DialogueText" type="RichTextLabel" parent="CanvasLayer/MainUI/GuidePanel/DialogueBox/Margin/VBox" unique_id=901000005]
+custom_minimum_size = Vector2(0, 110)
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
 bbcode_enabled = true
-scroll_following = true
+scroll_active = false
+fit_content = false
 
-[node name="InputRow" type="HBoxContainer" parent="CanvasLayer/MainUI/GuidePanel/ChatPanel/ChatVBox" unique_id=217064910]
+[node name="ContinueHint" type="Label" parent="CanvasLayer/MainUI/GuidePanel/DialogueBox/Margin/VBox" unique_id=901000006]
 layout_mode = 2
-
-[node name="ChatInput" type="LineEdit" parent="CanvasLayer/MainUI/GuidePanel/ChatPanel/ChatVBox/InputRow" unique_id=32797122]
-custom_minimum_size = Vector2(420, 44)
-layout_mode = 2
-placeholder_text = "Ask GuideRobot..."
-
-[node name="SendButton" type="Button" parent="CanvasLayer/MainUI/GuidePanel/ChatPanel/ChatVBox/InputRow" unique_id=1358379149]
-custom_minimum_size = Vector2(90, 44)
-layout_mode = 2
-text = "Send"
+visible = false
+horizontal_alignment = 2
+text = "▼ 点击继续"
 
 [node name="BackButton" type="Button" parent="CanvasLayer/MainUI" unique_id=1177998466]
 visible = false
