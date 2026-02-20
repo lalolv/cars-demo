@@ -6,7 +6,6 @@ var world_environment: WorldEnvironment
 var directional_light: DirectionalLight3D
 var lighting_rig: Node3D
 var ambient_lights_root: Node3D
-var light_pillars: Node3D
 var play_pause_button: Button
 var music_selector: OptionButton
 var car_selector: OptionButton
@@ -62,7 +61,6 @@ func _cache_nodes() -> void:
 	directional_light = get_node_or_null("DirectionalLight3D") as DirectionalLight3D
 	lighting_rig = get_node_or_null("LightingRig") as Node3D
 	ambient_lights_root = get_node_or_null("AmbientLights") as Node3D
-	light_pillars = get_node_or_null("LightPillars") as Node3D
 	play_pause_button = get_node_or_null("CanvasLayer/MainUI/TopBar/PlayPauseButton") as Button
 	music_selector = get_node_or_null("CanvasLayer/MainUI/TopBar/MusicSelector") as OptionButton
 	car_selector = get_node_or_null("CanvasLayer/MainUI/TopBar/CarSelector") as OptionButton
@@ -280,7 +278,6 @@ func _collect_light_groups() -> void:
 	_register_light_group("car", _collect_lights_from_node(lighting_rig))
 
 	var ambient_lights: Array[Light3D] = _collect_lights_from_node(ambient_lights_root)
-	ambient_lights.append_array(_collect_lights_from_node(light_pillars))
 	_register_light_group("ambient", ambient_lights)
 
 func _register_light_group(group_name: String, lights: Array[Light3D]) -> void:
