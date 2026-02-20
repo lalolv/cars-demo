@@ -1,14 +1,35 @@
 extends Node3D
 
+enum FocusMode {
+	DEFAULT,
+	STAGE,
+	GUIDE,
+}
+
 var car_manager: Node
 var music_player: Node
 var world_environment: WorldEnvironment
 var directional_light: DirectionalLight3D
 var lighting_rig: Node3D
 var ambient_lights_root: Node3D
+var orbit_camera: Camera3D
+var stage_node: Node3D
+var stage_focus_camera_point: Node3D
+var stage_focus_look_target: Node3D
+var guide_robot_node: Node3D
+var guide_focus_camera_point: Node3D
+var guide_focus_look_target: Node3D
+var default_camera_point: Node3D
+var stage_camera_point: Node3D
+var guide_camera_point: Node3D
+var main_ui: Control
+var default_panel: Control
+var stage_panel: Control
+var guide_panel: Control
+var back_button: Button
 var play_pause_button: Button
 var music_selector: OptionButton
-var car_selector: OptionButton
+var stage_car_thumb_list: HBoxContainer
 var screen_toggle_button: Button
 var slide_interval_slider: HSlider
 var wall_promo_toggle_button: Button
@@ -17,6 +38,9 @@ var car_lights_toggle: CheckButton
 var ambient_lights_toggle: CheckButton
 var lighting_mode_selector: OptionButton
 var env_intensity_slider: HSlider
+var guide_chat_history: RichTextLabel
+var guide_chat_input: LineEdit
+var guide_send_button: Button
 var back_screen_root: Node3D
 var spec_poster_panel: MeshInstance3D
 var left_wing_poster_panel: MeshInstance3D
@@ -31,7 +55,13 @@ const LIGHT_TWEEN_DURATION: float = 0.3
 const LIGHTING_MODE_PRESENTATION: int = 0
 const LIGHTING_MODE_SHOWROOM_BRIGHT: int = 1
 const LIGHTING_MODE_ATMOSPHERE: int = 2
+const CAMERA_FOCUS_TWEEN_DURATION: float = 0.45
+const CAMERA_RAY_LENGTH: float = 120.0
+const GUIDE_FRONT_DISTANCE: float = 1.85
+const GUIDE_LOOK_HEIGHT: float = 0.58
+const GUIDE_CAMERA_HEIGHT: float = 1.02
 
+var _focus_mode: int = FocusMode.DEFAULT
 var _light_groups: Dictionary = {}
 var _default_light_energy: Dictionary = {}
 var _group_scales: Dictionary = {
@@ -42,6 +72,10 @@ var _group_scales: Dictionary = {
 var _base_environment_energy: float = 1.0
 var _base_background_energy: float = 1.0
 var _promo_panels: Array[MeshInstance3D] = []
+var _stage_car_buttons: Array[Button] = []
+var _camera_tween: Tween
+var _saved_default_camera_transform: Transform3D = Transform3D.IDENTITY
+var _guide_greeting_sent: bool = false
 
 func _ready() -> void:
 	_cache_nodes()
@@ -53,6 +87,16 @@ func _ready() -> void:
 	_setup_showroom_controls()
 	_setup_lighting_controls()
 	_refresh_play_pause_text()
+	_set_ui_mode(FocusMode.DEFAULT)
+
+func _unhandled_input(event: InputEvent) -> void:
+	if _focus_mode != FocusMode.DEFAULT:
+		return
+
+	if event is InputEventScreenTouch and event.pressed:
+		_try_focus_from_screen(event.position)
+	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		_try_focus_from_screen(event.position)
 
 func _cache_nodes() -> void:
 	car_manager = get_node_or_null("CarManager")
@@ -61,17 +105,39 @@ func _cache_nodes() -> void:
 	directional_light = get_node_or_null("DirectionalLight3D") as DirectionalLight3D
 	lighting_rig = get_node_or_null("LightingRig") as Node3D
 	ambient_lights_root = get_node_or_null("AmbientLights") as Node3D
-	play_pause_button = get_node_or_null("CanvasLayer/MainUI/TopBar/PlayPauseButton") as Button
-	music_selector = get_node_or_null("CanvasLayer/MainUI/TopBar/MusicSelector") as OptionButton
-	car_selector = get_node_or_null("CanvasLayer/MainUI/TopBar/CarSelector") as OptionButton
-	screen_toggle_button = get_node_or_null("CanvasLayer/MainUI/TopBar/ScreenToggleButton") as Button
-	slide_interval_slider = get_node_or_null("CanvasLayer/MainUI/TopBar/SlideIntervalSlider") as HSlider
-	wall_promo_toggle_button = get_node_or_null("CanvasLayer/MainUI/TopBar/WallPromoToggleButton") as Button
-	base_lights_toggle = get_node_or_null("CanvasLayer/MainUI/LightingPanel/LightingVBox/BaseLightsToggle") as CheckButton
-	car_lights_toggle = get_node_or_null("CanvasLayer/MainUI/LightingPanel/LightingVBox/CarLightsToggle") as CheckButton
-	ambient_lights_toggle = get_node_or_null("CanvasLayer/MainUI/LightingPanel/LightingVBox/AmbientLightsToggle") as CheckButton
-	lighting_mode_selector = get_node_or_null("CanvasLayer/MainUI/LightingPanel/LightingVBox/LightingModeSelector") as OptionButton
-	env_intensity_slider = get_node_or_null("CanvasLayer/MainUI/LightingPanel/LightingVBox/EnvIntensitySlider") as HSlider
+	orbit_camera = get_node_or_null("OrbitCamera") as Camera3D
+	stage_node = get_node_or_null("Stage") as Node3D
+	stage_focus_camera_point = get_node_or_null("Stage/Platform/FocusCameraPoint") as Node3D
+	stage_focus_look_target = get_node_or_null("Stage/Platform/FocusLookTarget") as Node3D
+	if not stage_focus_camera_point:
+		stage_focus_camera_point = get_node_or_null("Stage/FocusCameraPoint") as Node3D
+	if not stage_focus_look_target:
+		stage_focus_look_target = get_node_or_null("Stage/FocusLookTarget") as Node3D
+	guide_robot_node = get_node_or_null("NPCs/GuideRobot") as Node3D
+	guide_focus_camera_point = get_node_or_null("NPCs/GuideRobot/FocusCameraPoint") as Node3D
+	guide_focus_look_target = get_node_or_null("NPCs/GuideRobot/FocusLookTarget") as Node3D
+	default_camera_point = get_node_or_null("CameraPoints/DefaultCamPoint") as Node3D
+	stage_camera_point = get_node_or_null("CameraPoints/StageFrontCamPoint") as Node3D
+	guide_camera_point = get_node_or_null("CameraPoints/GuideFrontCamPoint") as Node3D
+	main_ui = get_node_or_null("CanvasLayer/MainUI") as Control
+	default_panel = get_node_or_null("CanvasLayer/MainUI/DefaultPanel") as Control
+	stage_panel = get_node_or_null("CanvasLayer/MainUI/StagePanel") as Control
+	guide_panel = get_node_or_null("CanvasLayer/MainUI/GuidePanel") as Control
+	back_button = get_node_or_null("CanvasLayer/MainUI/BackButton") as Button
+	play_pause_button = get_node_or_null("CanvasLayer/MainUI/DefaultPanel/TopBar/PlayPauseButton") as Button
+	music_selector = get_node_or_null("CanvasLayer/MainUI/DefaultPanel/TopBar/MusicSelector") as OptionButton
+	stage_car_thumb_list = get_node_or_null("CanvasLayer/MainUI/StagePanel/BottomBar/CarThumbScroll/CarThumbList") as HBoxContainer
+	screen_toggle_button = get_node_or_null("CanvasLayer/MainUI/DefaultPanel/TopBar/ScreenToggleButton") as Button
+	slide_interval_slider = get_node_or_null("CanvasLayer/MainUI/DefaultPanel/TopBar/SlideIntervalSlider") as HSlider
+	wall_promo_toggle_button = get_node_or_null("CanvasLayer/MainUI/DefaultPanel/TopBar/WallPromoToggleButton") as Button
+	base_lights_toggle = get_node_or_null("CanvasLayer/MainUI/DefaultPanel/LightingPanel/LightingVBox/BaseLightsToggle") as CheckButton
+	car_lights_toggle = get_node_or_null("CanvasLayer/MainUI/DefaultPanel/LightingPanel/LightingVBox/CarLightsToggle") as CheckButton
+	ambient_lights_toggle = get_node_or_null("CanvasLayer/MainUI/DefaultPanel/LightingPanel/LightingVBox/AmbientLightsToggle") as CheckButton
+	lighting_mode_selector = get_node_or_null("CanvasLayer/MainUI/DefaultPanel/LightingPanel/LightingVBox/LightingModeSelector") as OptionButton
+	env_intensity_slider = get_node_or_null("CanvasLayer/MainUI/DefaultPanel/LightingPanel/LightingVBox/EnvIntensitySlider") as HSlider
+	guide_chat_history = get_node_or_null("CanvasLayer/MainUI/GuidePanel/ChatPanel/ChatVBox/ChatHistory") as RichTextLabel
+	guide_chat_input = get_node_or_null("CanvasLayer/MainUI/GuidePanel/ChatPanel/ChatVBox/InputRow/ChatInput") as LineEdit
+	guide_send_button = get_node_or_null("CanvasLayer/MainUI/GuidePanel/ChatPanel/ChatVBox/InputRow/SendButton") as Button
 	back_screen_root = get_node_or_null("BackScreenRoot") as Node3D
 	spec_poster_panel = get_node_or_null("BackScreenRoot/SpecWall/SpecPosterPanel") as MeshInstance3D
 	left_wing_poster_panel = get_node_or_null("BackScreenRoot/LeftWingWall/LeftWingPoster") as MeshInstance3D
@@ -79,28 +145,42 @@ func _cache_nodes() -> void:
 	screen_slideshow = get_node_or_null("BackScreenRoot/ScreenSlideshow")
 
 func _setup_selectors() -> void:
-	car_selector.clear()
 	var cars: Array = []
-	if car_manager.has_method("get_car_list"):
+	if car_manager and car_manager.has_method("get_car_list"):
 		cars = car_manager.call("get_car_list") as Array
-	for car_name in cars:
-		car_selector.add_item(str(car_name))
+	_setup_stage_car_buttons(cars)
 
-	music_selector.clear()
+	if music_selector:
+		music_selector.clear()
 	var tracks: Array = []
-	if music_player.has_method("get_music_list"):
+	if music_player and music_player.has_method("get_music_list"):
 		tracks = music_player.call("get_music_list") as Array
 	for track_name in tracks:
-		music_selector.add_item(str(track_name))
+		if music_selector:
+			music_selector.add_item(str(track_name))
+
+func _setup_stage_car_buttons(cars: Array) -> void:
+	_stage_car_buttons.clear()
+	if not stage_car_thumb_list:
+		return
+
+	for child in stage_car_thumb_list.get_children():
+		child.queue_free()
+
+	for index in range(cars.size()):
+		var button: Button = Button.new()
+		button.toggle_mode = true
+		button.custom_minimum_size = Vector2(180, 72)
+		button.text = str(cars[index])
+		button.pressed.connect(_on_stage_car_pressed.bind(index))
+		stage_car_thumb_list.add_child(button)
+		_stage_car_buttons.append(button)
 
 func _connect_ui_signals() -> void:
-	if not play_pause_button.pressed.is_connected(_on_play_pause_pressed):
+	if play_pause_button and not play_pause_button.pressed.is_connected(_on_play_pause_pressed):
 		play_pause_button.pressed.connect(_on_play_pause_pressed)
 
-	if not car_selector.item_selected.is_connected(_on_car_selected):
-		car_selector.item_selected.connect(_on_car_selected)
-
-	if not music_selector.item_selected.is_connected(_on_music_selected):
+	if music_selector and not music_selector.item_selected.is_connected(_on_music_selected):
 		music_selector.item_selected.connect(_on_music_selected)
 
 	if screen_toggle_button and not screen_toggle_button.pressed.is_connected(_on_screen_toggle_pressed):
@@ -112,52 +192,294 @@ func _connect_ui_signals() -> void:
 	if wall_promo_toggle_button and not wall_promo_toggle_button.pressed.is_connected(_on_wall_promo_toggle_pressed):
 		wall_promo_toggle_button.pressed.connect(_on_wall_promo_toggle_pressed)
 
+	if back_button and not back_button.pressed.is_connected(_on_back_pressed):
+		back_button.pressed.connect(_on_back_pressed)
+
+	if guide_send_button and not guide_send_button.pressed.is_connected(_on_guide_send_pressed):
+		guide_send_button.pressed.connect(_on_guide_send_pressed)
+
+	if guide_chat_input and not guide_chat_input.text_submitted.is_connected(_on_guide_text_submitted):
+		guide_chat_input.text_submitted.connect(_on_guide_text_submitted)
+
 func _connect_manager_signals() -> void:
-	if car_manager.has_signal("car_changed") and not car_manager.is_connected("car_changed", _on_car_changed):
+	if car_manager and car_manager.has_signal("car_changed") and not car_manager.is_connected("car_changed", _on_car_changed):
 		car_manager.connect("car_changed", _on_car_changed)
 
-	if music_player.has_signal("music_changed") and not music_player.is_connected("music_changed", _on_music_changed):
+	if music_player and music_player.has_signal("music_changed") and not music_player.is_connected("music_changed", _on_music_changed):
 		music_player.connect("music_changed", _on_music_changed)
 
 func _sync_selector_state() -> void:
-	if car_selector.item_count > 0 and car_manager.has_method("get_current_index"):
+	if car_manager and car_manager.has_method("get_current_index"):
 		var car_index: int = car_manager.call("get_current_index") as int
-		car_selector.select(clamp(car_index, 0, car_selector.item_count - 1))
+		_select_stage_car_button(car_index)
 
-	if music_selector.item_count > 0 and music_player.has_method("get_current_index"):
+	if music_selector and music_selector.item_count > 0 and music_player and music_player.has_method("get_current_index"):
 		var music_index: int = music_player.call("get_current_index") as int
 		music_selector.select(clamp(music_index, 0, music_selector.item_count - 1))
 
+func _on_stage_car_pressed(index: int) -> void:
+	_on_car_selected(index)
+
 func _on_car_selected(index: int) -> void:
-	if car_manager.has_method("switch_to_car"):
+	if car_manager and car_manager.has_method("switch_to_car"):
 		car_manager.call("switch_to_car", index)
 
 func _on_music_selected(index: int) -> void:
-	if music_player.has_method("play_music"):
+	if music_player and music_player.has_method("play_music"):
 		music_player.call("play_music", index)
 
 func _on_play_pause_pressed() -> void:
-	if music_player.has_method("toggle_play"):
+	if music_player and music_player.has_method("toggle_play"):
 		music_player.call("toggle_play")
 	_refresh_play_pause_text()
 
 func _on_car_changed(car_name: String) -> void:
-	var index: int = _find_item_by_text(car_selector, car_name)
-	if index >= 0:
-		car_selector.select(index)
+	var cars: Array = []
+	if car_manager and car_manager.has_method("get_car_list"):
+		cars = car_manager.call("get_car_list") as Array
+
+	for i in range(cars.size()):
+		if str(cars[i]) == car_name:
+			_select_stage_car_button(i)
+			return
 
 func _on_music_changed(music_name: String) -> void:
+	if not music_selector:
+		return
+
 	var index: int = _find_item_by_text(music_selector, music_name)
 	if index >= 0:
 		music_selector.select(index)
 	_refresh_play_pause_text()
 
+func _select_stage_car_button(index: int) -> void:
+	if _stage_car_buttons.is_empty():
+		return
+
+	var clamped_index: int = clamp(index, 0, _stage_car_buttons.size() - 1)
+	for i in range(_stage_car_buttons.size()):
+		var button: Button = _stage_car_buttons[i]
+		if button:
+			button.set_pressed_no_signal(i == clamped_index)
+
 func _refresh_play_pause_text() -> void:
+	if not play_pause_button:
+		return
+
 	var button_text: String = "Play"
-	var audio_player: AudioStreamPlayer = music_player.get("audio_player") as AudioStreamPlayer
+	var audio_player: AudioStreamPlayer = null
+	if music_player:
+		audio_player = music_player.get("audio_player") as AudioStreamPlayer
 	if audio_player and audio_player.playing and not audio_player.stream_paused:
 		button_text = "Pause"
 	play_pause_button.text = button_text
+
+func _set_ui_mode(mode: int) -> void:
+	if default_panel:
+		default_panel.visible = mode == FocusMode.DEFAULT
+	if stage_panel:
+		stage_panel.visible = mode == FocusMode.STAGE
+	if guide_panel:
+		guide_panel.visible = mode == FocusMode.GUIDE
+	if back_button:
+		back_button.visible = mode != FocusMode.DEFAULT
+
+func _on_back_pressed() -> void:
+	_return_to_default_focus()
+
+func _try_focus_from_screen(screen_position: Vector2) -> void:
+	if not orbit_camera:
+		return
+
+	if main_ui and main_ui.get_global_rect().has_point(screen_position):
+		var hovered_control: Control = get_viewport().gui_get_hovered_control()
+		if hovered_control:
+			return
+
+	var ray_origin: Vector3 = orbit_camera.project_ray_origin(screen_position)
+	var ray_end: Vector3 = ray_origin + orbit_camera.project_ray_normal(screen_position) * CAMERA_RAY_LENGTH
+	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(ray_origin, ray_end)
+	query.collide_with_areas = true
+	query.collide_with_bodies = true
+
+	var result: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
+	if result.is_empty():
+		return
+
+	var collider: Node = result.get("collider") as Node
+	if not collider:
+		return
+
+	if _is_node_in_subtree(collider, guide_robot_node):
+		_enter_guide_focus()
+		return
+
+	if _is_node_in_subtree(collider, stage_node):
+		_enter_stage_focus()
+
+func _is_node_in_subtree(node: Node, root: Node) -> bool:
+	if not node or not root:
+		return false
+
+	var current: Node = node
+	while current:
+		if current == root:
+			return true
+		current = current.get_parent()
+
+	return false
+
+func _save_default_camera_transform() -> void:
+	if _focus_mode == FocusMode.DEFAULT and orbit_camera:
+		_saved_default_camera_transform = orbit_camera.global_transform
+
+func _enter_stage_focus() -> void:
+	if _focus_mode == FocusMode.STAGE:
+		return
+
+	_save_default_camera_transform()
+	_focus_mode = FocusMode.STAGE
+	_set_orbit_controls_enabled(false)
+	_set_ui_mode(FocusMode.STAGE)
+
+	_move_camera_to_transform(_build_stage_focus_transform())
+
+func _build_stage_focus_transform() -> Transform3D:
+	if stage_focus_camera_point and stage_focus_look_target:
+		return _build_look_transform(
+			stage_focus_camera_point.global_position,
+			stage_focus_look_target.global_position
+		)
+
+	if stage_camera_point and stage_node:
+		var look_target: Vector3 = stage_node.global_position + Vector3(0, 1.2, 0)
+		return _build_look_transform(stage_camera_point.global_position, look_target)
+
+	if stage_camera_point:
+		return stage_camera_point.global_transform
+	return orbit_camera.global_transform if orbit_camera else Transform3D.IDENTITY
+
+func _enter_guide_focus() -> void:
+	if _focus_mode == FocusMode.GUIDE:
+		return
+
+	_save_default_camera_transform()
+	_focus_mode = FocusMode.GUIDE
+	_set_orbit_controls_enabled(false)
+	_set_ui_mode(FocusMode.GUIDE)
+
+	_move_camera_to_transform(_build_guide_focus_transform())
+
+	if not _guide_greeting_sent:
+		_append_chat_line("GuideRobot", "你好，欢迎来到展厅。点击发送可以开始问答。")
+		_guide_greeting_sent = true
+
+func _build_guide_focus_transform() -> Transform3D:
+	if guide_focus_camera_point and guide_focus_look_target:
+		return _build_look_transform(
+			guide_focus_camera_point.global_position,
+			guide_focus_look_target.global_position
+		)
+
+	if not guide_robot_node:
+		if guide_camera_point:
+			return guide_camera_point.global_transform
+		return orbit_camera.global_transform if orbit_camera else Transform3D.IDENTITY
+
+	var robot_pos: Vector3 = guide_robot_node.global_position
+	var look_target: Vector3 = robot_pos + Vector3(0, GUIDE_LOOK_HEIGHT, 0)
+	var forward: Vector3 = -guide_robot_node.global_basis.z.normalized()
+	if forward.is_zero_approx():
+		forward = Vector3.FORWARD
+
+	var camera_origin: Vector3 = robot_pos + forward * GUIDE_FRONT_DISTANCE + Vector3(0, GUIDE_CAMERA_HEIGHT, 0)
+	return _build_look_transform(camera_origin, look_target)
+
+func _return_to_default_focus() -> void:
+	if _focus_mode == FocusMode.DEFAULT:
+		return
+
+	_focus_mode = FocusMode.DEFAULT
+	_set_ui_mode(FocusMode.DEFAULT)
+
+	var on_complete: Callable = Callable(self, "_on_default_camera_returned")
+	if _saved_default_camera_transform != Transform3D.IDENTITY:
+		_move_camera_to_transform(_saved_default_camera_transform, on_complete)
+	elif default_camera_point:
+		var look_target: Vector3 = stage_node.global_position if stage_node else Vector3.ZERO
+		_move_camera_to_point(default_camera_point, look_target, on_complete)
+	else:
+		_on_default_camera_returned()
+
+func _on_default_camera_returned() -> void:
+	_set_orbit_controls_enabled(true)
+
+func _move_camera_to_point(point: Node3D, look_target: Vector3, on_complete: Callable = Callable()) -> void:
+	if not orbit_camera:
+		return
+	if not point:
+		if on_complete.is_valid():
+			on_complete.call()
+		return
+
+	var target_transform: Transform3D = _build_look_transform(point.global_position, look_target)
+	_move_camera_to_transform(target_transform, on_complete)
+
+func _move_camera_to_transform(target_transform: Transform3D, on_complete: Callable = Callable()) -> void:
+	if not orbit_camera:
+		return
+
+	if _camera_tween:
+		_camera_tween.kill()
+
+	_camera_tween = create_tween()
+	_camera_tween.set_trans(Tween.TRANS_CUBIC)
+	_camera_tween.set_ease(Tween.EASE_IN_OUT)
+	_camera_tween.tween_property(orbit_camera, "global_transform", target_transform, CAMERA_FOCUS_TWEEN_DURATION)
+	if on_complete.is_valid():
+		_camera_tween.tween_callback(on_complete)
+
+func _build_look_transform(origin: Vector3, look_target: Vector3) -> Transform3D:
+	var temp: Node3D = Node3D.new()
+	add_child(temp)
+	temp.global_position = origin
+	temp.look_at(look_target, Vector3.UP)
+	var target_transform: Transform3D = temp.global_transform
+	temp.queue_free()
+	return target_transform
+
+func _set_orbit_controls_enabled(enabled: bool) -> void:
+	if not orbit_camera:
+		return
+
+	if orbit_camera.has_method("set_controls_enabled"):
+		orbit_camera.call("set_controls_enabled", enabled)
+	else:
+		orbit_camera.set("controls_enabled", enabled)
+
+func _on_guide_send_pressed() -> void:
+	_send_guide_message()
+
+func _on_guide_text_submitted(_text: String) -> void:
+	_send_guide_message()
+
+func _send_guide_message() -> void:
+	if not guide_chat_input:
+		return
+
+	var content: String = guide_chat_input.text.strip_edges()
+	if content.is_empty():
+		return
+
+	_append_chat_line("You", content)
+	_append_chat_line("GuideRobot", "收到：%s" % content)
+	guide_chat_input.clear()
+
+func _append_chat_line(speaker: String, content: String) -> void:
+	if not guide_chat_history:
+		return
+
+	guide_chat_history.append_text("[b]%s:[/b] %s\n" % [speaker, content])
 
 func _setup_showroom_controls() -> void:
 	if not screen_slideshow:

@@ -1,12 +1,17 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://d3jjb6g1l1jfu"]
 
-[ext_resource type="PackedScene" path="res://assets/models/toy_robot_domowik/toy_robot_domowik.glb" id="1_model"]
-[ext_resource type="Script" path="res://scripts/guide_robot.gd" id="2_script"]
+[ext_resource type="PackedScene" uid="uid://c6qotn3nt0dt4" path="res://assets/models/toy_robot_domowik/toy_robot_domowik.glb" id="1_model"]
+[ext_resource type="Script" uid="uid://bot2fcib3bpax" path="res://scripts/guide_robot.gd" id="2_script"]
 
-[node name="GuideRobot" type="Node3D"]
+[node name="GuideRobot" type="Node3D" unique_id=209887387]
 script = ExtResource("2_script")
 
-[node name="Model" parent="." instance=ExtResource("1_model")]
-scale = Vector3(0.2, 0.2, 0.2)
+[node name="Model" parent="." unique_id=786745077 instance=ExtResource("1_model")]
+transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0)
+
+[node name="FocusLookTarget" type="Marker3D" parent="." unique_id=1899673265]
+
+[node name="FocusCameraPoint" type="Marker3D" parent="." unique_id=1238994005]
+transform = Transform3D(1, 0, 0, 0, 0.96152395, 0.27472112, 0, -0.27472112, 0.96152395, 2, 0.5, 0.275)
 
 [editable path="Model"]

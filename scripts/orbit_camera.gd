@@ -12,6 +12,7 @@ extends Camera3D
 @export var min_yaw: float = -120.0
 @export var max_yaw: float = 120.0
 @export var mouse_rotate_button: MouseButton = MOUSE_BUTTON_LEFT
+@export var controls_enabled: bool = true
 
 var _yaw: float = 24.0
 var _pitch: float = 23.0
@@ -23,6 +24,9 @@ func _ready() -> void:
 	_update_camera_position()
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not controls_enabled:
+		return
+
 	if event is InputEventScreenTouch:
 		if event.pressed:
 			_touch_positions[event.index] = event.position
@@ -48,6 +52,13 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	elif event is InputEventMouseMotion and _is_mouse_dragging:
 		_apply_rotation_delta(event.relative)
+
+func set_controls_enabled(enabled: bool) -> void:
+	controls_enabled = enabled
+	if not controls_enabled:
+		_touch_positions.clear()
+		_last_pinch_distance = 0.0
+		_is_mouse_dragging = false
 
 func _apply_rotation_delta(relative: Vector2) -> void:
 	_yaw -= relative.x * rotation_speed

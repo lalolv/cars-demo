@@ -17,7 +17,7 @@
 [ext_resource type="Shader" uid="uid://conlbbfwm01wt" path="res://shaders/stage_edge_ring.gdshader" id="17_stage_ring"]
 [ext_resource type="Shader" uid="uid://d20kflr2lh05p" path="res://shaders/floor_tiles.gdshader" id="18_floor_tiles"]
 [ext_resource type="PackedScene" path="res://scenes/cars/cartoon_sports_car.tscn" id="19_autocartoons"]
-[ext_resource type="PackedScene" path="res://scenes/npcs/toy_robot_domowik.tscn" id="20_guide_robot"]
+[ext_resource type="PackedScene" uid="uid://d3jjb6g1l1jfu" path="res://scenes/npcs/toy_robot_domowik.tscn" id="20_guide_robot"]
 [ext_resource type="PackedScene" uid="uid://yyf735xryrce" path="res://scenes/npcs/autonomous_robot_sweeper.tscn" id="21_sweeper"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sgp6g"]
@@ -69,6 +69,9 @@ radius = 2.2
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_sweeper_blocker"]
 height = 0.4
 radius = 2.28
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_guide_click"]
+radius = 2.2
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial3D_floor_tiles"]
 render_priority = 0
@@ -154,7 +157,7 @@ albedo_color = Color(0.8, 0.83, 0.88, 1)
 roughness = 0.7
 
 [sub_resource type="BoxMesh" id="BoxMesh_wing_wall"]
-size = Vector3(2.0, 4.8, 0.22)
+size = Vector3(2, 4.8, 0.22)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wing_poster_left"]
 transparency = 1
@@ -192,6 +195,17 @@ distance = 7.0
 min_pitch = 12.0
 max_pitch = 50.0
 
+[node name="CameraPoints" type="Node3D" parent="." unique_id=202401230]
+
+[node name="DefaultCamPoint" type="Marker3D" parent="CameraPoints" unique_id=604219900]
+transform = Transform3D(0.9192488, -0.16181387, 0.35921186, 0, 0.91107136, 0.41224903, -0.39368024, -0.37895003, 0.83634776, 2.5, 2.85, 5.8)
+
+[node name="StageFrontCamPoint" type="Marker3D" parent="CameraPoints" unique_id=2073472811]
+transform = Transform3D(1, 0, 0, 0, 0.9578263, 0.28734788, 0, -0.28734788, 0.9578263, 0, 1.75, 4.9)
+
+[node name="GuideFrontCamPoint" type="Marker3D" parent="CameraPoints" unique_id=450048880]
+transform = Transform3D(0.26809072, 0.045533877, -0.96232665, 0, 0.998881, 0.04729462, 0.9634046, -0.012679872, 0.26779097, -1.15, 1.55, 1.5)
+
 [node name="Stage" type="Node3D" parent="." unique_id=790330411]
 script = ExtResource("2_sugp2")
 car_size_overrides = Dictionary[String, float]({
@@ -210,6 +224,11 @@ mesh = SubResource("CylinderMesh_sugp2")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Stage/Platform/StaticBody3D" unique_id=1282772031]
 shape = SubResource("CylinderShape3D_jyhfs")
 
+[node name="FocusLookTarget" type="Marker3D" parent="Stage/Platform" unique_id=1505586477]
+
+[node name="FocusCameraPoint" type="Marker3D" parent="Stage/Platform" unique_id=1221455777]
+transform = Transform3D(1, 0, 0, 0, 0.99999994, 0, 0, 0, 0.99999994, 0, 0.9, 3.8000002)
+
 [node name="StageReflectionProbe" type="ReflectionProbe" parent="Stage" unique_id=1730154822]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 size = Vector3(8, 4.5, 8)
@@ -224,7 +243,15 @@ shape = SubResource("CylinderShape3D_sweeper_blocker")
 [node name="NPCs" type="Node3D" parent="." unique_id=310794310]
 
 [node name="GuideRobot" parent="NPCs" unique_id=390918499 instance=ExtResource("20_guide_robot")]
-transform = Transform3D(0.2995918, 0, -0.51985073, 0, 0.6, 0, 0.51985073, 0, 0.2995918, -3.3846335, 0.28151947, 0.98103344)
+transform = Transform3D(-2.6226832e-08, 0, -0.59999996, 0, 0.59999996, 0, 0.59999996, 0, -2.6226832e-08, -3.3846335, 0.28151947, 0.98103344)
+
+[node name="ClickArea" type="Area3D" parent="NPCs/GuideRobot" unique_id=1204602316]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NPCs/GuideRobot/ClickArea" unique_id=1939016608]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("SphereShape3D_guide_click")
 
 [node name="AutonomousRobotSweeper" parent="NPCs" unique_id=973016407 node_paths=PackedStringArray("back_wheel_node", "front_wheel_node", "back_wheel_visual_node", "front_wheel_visual_node", "brush_left_node", "brush_right_node") instance=ExtResource("21_sweeper")]
 transform = Transform3D(1.7931504, 0, -0.1568803, 0, 1.8, 0, 0.1568803, 0, 1.7931504, 4.4, 0, 2.8)
@@ -551,7 +578,16 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="TopBar" type="HBoxContainer" parent="CanvasLayer/MainUI" unique_id=1752097109]
+[node name="DefaultPanel" type="Control" parent="CanvasLayer/MainUI" unique_id=1248895109]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TopBar" type="HBoxContainer" parent="CanvasLayer/MainUI/DefaultPanel" unique_id=1752097109]
 layout_mode = 0
 offset_left = 20.0
 offset_top = 20.0
@@ -559,25 +595,21 @@ offset_right = 820.0
 offset_bottom = 68.0
 theme_override_constants/separation = 12
 
-[node name="PlayPauseButton" type="Button" parent="CanvasLayer/MainUI/TopBar" unique_id=759480709]
+[node name="PlayPauseButton" type="Button" parent="CanvasLayer/MainUI/DefaultPanel/TopBar" unique_id=759480709]
 custom_minimum_size = Vector2(120, 48)
 layout_mode = 2
 text = "Play"
 
-[node name="MusicSelector" type="OptionButton" parent="CanvasLayer/MainUI/TopBar" unique_id=1038104861]
+[node name="MusicSelector" type="OptionButton" parent="CanvasLayer/MainUI/DefaultPanel/TopBar" unique_id=1038104861]
 custom_minimum_size = Vector2(220, 48)
 layout_mode = 2
 
-[node name="CarSelector" type="OptionButton" parent="CanvasLayer/MainUI/TopBar" unique_id=1307564621]
-custom_minimum_size = Vector2(220, 48)
-layout_mode = 2
-
-[node name="ScreenToggleButton" type="Button" parent="CanvasLayer/MainUI/TopBar" unique_id=1929715639]
+[node name="ScreenToggleButton" type="Button" parent="CanvasLayer/MainUI/DefaultPanel/TopBar" unique_id=1929715639]
 custom_minimum_size = Vector2(120, 48)
 layout_mode = 2
 text = "Screen On"
 
-[node name="SlideIntervalSlider" type="HSlider" parent="CanvasLayer/MainUI/TopBar" unique_id=1521262375]
+[node name="SlideIntervalSlider" type="HSlider" parent="CanvasLayer/MainUI/DefaultPanel/TopBar" unique_id=1521262375]
 custom_minimum_size = Vector2(180, 48)
 layout_mode = 2
 min_value = 2.0
@@ -585,12 +617,12 @@ max_value = 12.0
 step = 0.5
 value = 6.5
 
-[node name="WallPromoToggleButton" type="Button" parent="CanvasLayer/MainUI/TopBar" unique_id=1547953009]
+[node name="WallPromoToggleButton" type="Button" parent="CanvasLayer/MainUI/DefaultPanel/TopBar" unique_id=1547953009]
 custom_minimum_size = Vector2(120, 48)
 layout_mode = 2
 text = "Promo On"
 
-[node name="LightingPanel" type="PanelContainer" parent="CanvasLayer/MainUI" unique_id=1169702714]
+[node name="LightingPanel" type="PanelContainer" parent="CanvasLayer/MainUI/DefaultPanel" unique_id=1169702714]
 layout_mode = 0
 anchor_left = 1.0
 anchor_right = 1.0
@@ -599,47 +631,132 @@ offset_top = 20.0
 offset_right = -20.0
 offset_bottom = 310.0
 
-[node name="LightingVBox" type="VBoxContainer" parent="CanvasLayer/MainUI/LightingPanel" unique_id=1181008771]
+[node name="LightingVBox" type="VBoxContainer" parent="CanvasLayer/MainUI/DefaultPanel/LightingPanel" unique_id=1181008771]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="LightingTitle" type="Label" parent="CanvasLayer/MainUI/LightingPanel/LightingVBox" unique_id=245737381]
+[node name="LightingTitle" type="Label" parent="CanvasLayer/MainUI/DefaultPanel/LightingPanel/LightingVBox" unique_id=245737381]
 layout_mode = 2
 text = "Lighting"
 
-[node name="LightingModeLabel" type="Label" parent="CanvasLayer/MainUI/LightingPanel/LightingVBox" unique_id=1084975331]
+[node name="LightingModeLabel" type="Label" parent="CanvasLayer/MainUI/DefaultPanel/LightingPanel/LightingVBox" unique_id=1084975331]
 layout_mode = 2
 text = "Mode"
 
-[node name="LightingModeSelector" type="OptionButton" parent="CanvasLayer/MainUI/LightingPanel/LightingVBox" unique_id=1422201114]
+[node name="LightingModeSelector" type="OptionButton" parent="CanvasLayer/MainUI/DefaultPanel/LightingPanel/LightingVBox" unique_id=1422201114]
 custom_minimum_size = Vector2(240, 38)
 layout_mode = 2
 
-[node name="BaseLightsToggle" type="CheckButton" parent="CanvasLayer/MainUI/LightingPanel/LightingVBox" unique_id=1345344589]
+[node name="BaseLightsToggle" type="CheckButton" parent="CanvasLayer/MainUI/DefaultPanel/LightingPanel/LightingVBox" unique_id=1345344589]
 layout_mode = 2
 button_pressed = true
 text = "Base Lights"
 
-[node name="CarLightsToggle" type="CheckButton" parent="CanvasLayer/MainUI/LightingPanel/LightingVBox" unique_id=788494334]
+[node name="CarLightsToggle" type="CheckButton" parent="CanvasLayer/MainUI/DefaultPanel/LightingPanel/LightingVBox" unique_id=788494334]
 layout_mode = 2
 button_pressed = true
 text = "Car Lights"
 
-[node name="AmbientLightsToggle" type="CheckButton" parent="CanvasLayer/MainUI/LightingPanel/LightingVBox" unique_id=16861132]
+[node name="AmbientLightsToggle" type="CheckButton" parent="CanvasLayer/MainUI/DefaultPanel/LightingPanel/LightingVBox" unique_id=16861132]
 layout_mode = 2
 button_pressed = true
 text = "Ambient Lights"
 
-[node name="EnvIntensityLabel" type="Label" parent="CanvasLayer/MainUI/LightingPanel/LightingVBox" unique_id=438632525]
+[node name="EnvIntensityLabel" type="Label" parent="CanvasLayer/MainUI/DefaultPanel/LightingPanel/LightingVBox" unique_id=438632525]
 layout_mode = 2
 text = "Env Intensity"
 
-[node name="EnvIntensitySlider" type="HSlider" parent="CanvasLayer/MainUI/LightingPanel/LightingVBox" unique_id=2029401795]
+[node name="EnvIntensitySlider" type="HSlider" parent="CanvasLayer/MainUI/DefaultPanel/LightingPanel/LightingVBox" unique_id=2029401795]
 custom_minimum_size = Vector2(240, 32)
 layout_mode = 2
 max_value = 1.5
 step = 0.05
 value = 0.8
+
+[node name="StagePanel" type="Control" parent="CanvasLayer/MainUI" unique_id=518099408]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="BottomBar" type="PanelContainer" parent="CanvasLayer/MainUI/StagePanel" unique_id=438240384]
+layout_mode = 0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 30.0
+offset_top = -130.0
+offset_right = -30.0
+offset_bottom = -24.0
+
+[node name="CarThumbScroll" type="ScrollContainer" parent="CanvasLayer/MainUI/StagePanel/BottomBar" unique_id=1626147444]
+layout_mode = 2
+horizontal_scroll_mode = 2
+
+[node name="CarThumbList" type="HBoxContainer" parent="CanvasLayer/MainUI/StagePanel/BottomBar/CarThumbScroll" unique_id=486194421]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="GuidePanel" type="Control" parent="CanvasLayer/MainUI" unique_id=364322372]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ChatPanel" type="PanelContainer" parent="CanvasLayer/MainUI/GuidePanel" unique_id=153812192]
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -280.0
+offset_top = -300.0
+offset_right = 280.0
+offset_bottom = -28.0
+
+[node name="ChatVBox" type="VBoxContainer" parent="CanvasLayer/MainUI/GuidePanel/ChatPanel" unique_id=1841740840]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ChatTitle" type="Label" parent="CanvasLayer/MainUI/GuidePanel/ChatPanel/ChatVBox" unique_id=746754092]
+layout_mode = 2
+text = "GuideRobot Chat"
+
+[node name="ChatHistory" type="RichTextLabel" parent="CanvasLayer/MainUI/GuidePanel/ChatPanel/ChatVBox" unique_id=193418399]
+custom_minimum_size = Vector2(520, 180)
+layout_mode = 2
+bbcode_enabled = true
+scroll_following = true
+
+[node name="InputRow" type="HBoxContainer" parent="CanvasLayer/MainUI/GuidePanel/ChatPanel/ChatVBox" unique_id=217064910]
+layout_mode = 2
+
+[node name="ChatInput" type="LineEdit" parent="CanvasLayer/MainUI/GuidePanel/ChatPanel/ChatVBox/InputRow" unique_id=32797122]
+custom_minimum_size = Vector2(420, 44)
+layout_mode = 2
+placeholder_text = "Ask GuideRobot..."
+
+[node name="SendButton" type="Button" parent="CanvasLayer/MainUI/GuidePanel/ChatPanel/ChatVBox/InputRow" unique_id=1358379149]
+custom_minimum_size = Vector2(90, 44)
+layout_mode = 2
+text = "Send"
+
+[node name="BackButton" type="Button" parent="CanvasLayer/MainUI" unique_id=1177998466]
+visible = false
+layout_mode = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 150.0
+offset_bottom = 68.0
+text = "Back"
 
 [node name="AudioVisualizer" type="Node" parent="." unique_id=261673062 node_paths=PackedStringArray("stage_platform")]
 script = ExtResource("6_tipki")
