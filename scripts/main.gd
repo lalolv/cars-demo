@@ -4,6 +4,7 @@ enum FocusMode {
 	DEFAULT,
 	STAGE,
 	GUIDE,
+	SWEEPER,
 }
 
 var car_manager: Node
@@ -19,6 +20,9 @@ var stage_focus_look_target: Node3D
 var guide_robot_node: Node3D
 var guide_focus_camera_point: Node3D
 var guide_focus_look_target: Node3D
+var sweeper_node: Node3D
+var sweeper_focus_camera_point: Node3D
+var sweeper_focus_look_target: Node3D
 var default_camera_point: Node3D
 var stage_camera_point: Node3D
 var guide_camera_point: Node3D
@@ -60,6 +64,10 @@ const CAMERA_RAY_LENGTH: float = 120.0
 const GUIDE_FRONT_DISTANCE: float = 1.85
 const GUIDE_LOOK_HEIGHT: float = 0.58
 const GUIDE_CAMERA_HEIGHT: float = 1.02
+const SWEEPER_FOLLOW_LERP_SPEED: float = 9.0
+const SWEEPER_BACK_DISTANCE: float = 2.1
+const SWEEPER_CAMERA_HEIGHT: float = 1.15
+const SWEEPER_LOOK_HEIGHT: float = 0.52
 
 var _focus_mode: int = FocusMode.DEFAULT
 var _light_groups: Dictionary = {}
@@ -76,6 +84,7 @@ var _stage_car_buttons: Array[Button] = []
 var _camera_tween: Tween
 var _saved_default_camera_transform: Transform3D = Transform3D.IDENTITY
 var _guide_greeting_sent: bool = false
+var _sweeper_follow_active: bool = false
 
 func _ready() -> void:
 	_cache_nodes()
@@ -88,6 +97,10 @@ func _ready() -> void:
 	_setup_lighting_controls()
 	_refresh_play_pause_text()
 	_set_ui_mode(FocusMode.DEFAULT)
+
+func _process(delta: float) -> void:
+	if _focus_mode == FocusMode.SWEEPER:
+		_update_sweeper_follow_camera(delta)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _focus_mode != FocusMode.DEFAULT:
@@ -116,6 +129,9 @@ func _cache_nodes() -> void:
 	guide_robot_node = get_node_or_null("NPCs/GuideRobot") as Node3D
 	guide_focus_camera_point = get_node_or_null("NPCs/GuideRobot/FocusCameraPoint") as Node3D
 	guide_focus_look_target = get_node_or_null("NPCs/GuideRobot/FocusLookTarget") as Node3D
+	sweeper_node = get_node_or_null("NPCs/AutonomousRobotSweeper") as Node3D
+	sweeper_focus_camera_point = get_node_or_null("NPCs/AutonomousRobotSweeper/FocusCameraPoint") as Node3D
+	sweeper_focus_look_target = get_node_or_null("NPCs/AutonomousRobotSweeper/FocusLookTarget") as Node3D
 	default_camera_point = get_node_or_null("CameraPoints/DefaultCamPoint") as Node3D
 	stage_camera_point = get_node_or_null("CameraPoints/StageFrontCamPoint") as Node3D
 	guide_camera_point = get_node_or_null("CameraPoints/GuideFrontCamPoint") as Node3D
@@ -314,6 +330,10 @@ func _try_focus_from_screen(screen_position: Vector2) -> void:
 		_enter_guide_focus()
 		return
 
+	if _is_node_in_subtree(collider, sweeper_node):
+		_enter_sweeper_focus()
+		return
+
 	if _is_node_in_subtree(collider, stage_node):
 		_enter_stage_focus()
 
@@ -337,6 +357,7 @@ func _enter_stage_focus() -> void:
 	if _focus_mode == FocusMode.STAGE:
 		return
 
+	_sweeper_follow_active = false
 	_save_default_camera_transform()
 	_focus_mode = FocusMode.STAGE
 	_set_orbit_controls_enabled(false)
@@ -363,6 +384,7 @@ func _enter_guide_focus() -> void:
 	if _focus_mode == FocusMode.GUIDE:
 		return
 
+	_sweeper_follow_active = false
 	_save_default_camera_transform()
 	_focus_mode = FocusMode.GUIDE
 	_set_orbit_controls_enabled(false)
@@ -373,6 +395,46 @@ func _enter_guide_focus() -> void:
 	if not _guide_greeting_sent:
 		_append_chat_line("GuideRobot", "你好，欢迎来到展厅。点击发送可以开始问答。")
 		_guide_greeting_sent = true
+
+func _enter_sweeper_focus() -> void:
+	if _focus_mode == FocusMode.SWEEPER:
+		return
+
+	_save_default_camera_transform()
+	_focus_mode = FocusMode.SWEEPER
+	_set_orbit_controls_enabled(false)
+	_set_ui_mode(FocusMode.SWEEPER)
+	_sweeper_follow_active = false
+	_move_camera_to_transform(_build_sweeper_focus_transform(), Callable(self, "_on_sweeper_focus_entered"))
+
+func _on_sweeper_focus_entered() -> void:
+	if _focus_mode == FocusMode.SWEEPER:
+		_sweeper_follow_active = true
+
+func _build_sweeper_focus_transform() -> Transform3D:
+	if sweeper_focus_camera_point and sweeper_focus_look_target:
+		return _build_look_transform(
+			sweeper_focus_camera_point.global_position,
+			sweeper_focus_look_target.global_position
+		)
+
+	if not sweeper_node:
+		return orbit_camera.global_transform if orbit_camera else Transform3D.IDENTITY
+
+	var look_target: Vector3 = sweeper_node.global_position + Vector3(0, SWEEPER_LOOK_HEIGHT, 0)
+	var back_dir: Vector3 = sweeper_node.global_basis.z.normalized()
+	if back_dir.is_zero_approx():
+		back_dir = Vector3.BACK
+	var camera_origin: Vector3 = sweeper_node.global_position + back_dir * SWEEPER_BACK_DISTANCE + Vector3(0, SWEEPER_CAMERA_HEIGHT, 0)
+	return _build_look_transform(camera_origin, look_target)
+
+func _update_sweeper_follow_camera(delta: float) -> void:
+	if not _sweeper_follow_active or not orbit_camera:
+		return
+
+	var target_transform: Transform3D = _build_sweeper_focus_transform()
+	var weight: float = clampf(delta * SWEEPER_FOLLOW_LERP_SPEED, 0.0, 1.0)
+	orbit_camera.global_transform = orbit_camera.global_transform.interpolate_with(target_transform, weight)
 
 func _build_guide_focus_transform() -> Transform3D:
 	if guide_focus_camera_point and guide_focus_look_target:
@@ -399,6 +461,7 @@ func _return_to_default_focus() -> void:
 	if _focus_mode == FocusMode.DEFAULT:
 		return
 
+	_sweeper_follow_active = false
 	_focus_mode = FocusMode.DEFAULT
 	_set_ui_mode(FocusMode.DEFAULT)
 
