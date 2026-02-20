@@ -121,6 +121,7 @@ const SWEEPER_FOLLOW_LERP_SPEED: float = 9.0
 const SWEEPER_BACK_DISTANCE: float = 2.1
 const SWEEPER_CAMERA_HEIGHT: float = 1.15
 const SWEEPER_LOOK_HEIGHT: float = 0.52
+const SWIPE_THRESHOLD: float = 80.0
 
 var _focus_mode: int = FocusMode.DEFAULT
 var _light_groups: Dictionary = {}
@@ -134,6 +135,8 @@ var _base_environment_energy: float = 1.0
 var _base_background_energy: float = 1.0
 var _promo_panels: Array[MeshInstance3D] = []
 var _stage_car_buttons: Array[Button] = []
+var _swipe_start: Vector2 = Vector2.ZERO
+var _swipe_tracking: bool = false
 var _camera_tween: Tween
 var _saved_default_camera_transform: Transform3D = Transform3D.IDENTITY
 var _dialogue_lines: Array[String] = []
@@ -160,6 +163,29 @@ func _process(delta: float) -> void:
 		_update_sweeper_follow_camera(delta)
 
 func _unhandled_input(event: InputEvent) -> void:
+	if _focus_mode == FocusMode.STAGE:
+		if event is InputEventScreenTouch:
+			if event.pressed:
+				_swipe_start = event.position
+				_swipe_tracking = true
+			else:
+				if _swipe_tracking:
+					var delta: Vector2 = event.position - _swipe_start
+					if abs(delta.x) > SWIPE_THRESHOLD and abs(delta.x) > abs(delta.y):
+						_switch_car_relative(-1 if delta.x < 0 else 1)
+					_swipe_tracking = false
+		elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed:
+				_swipe_start = event.position
+				_swipe_tracking = true
+			else:
+				if _swipe_tracking:
+					var delta: Vector2 = event.position - _swipe_start
+					if abs(delta.x) > SWIPE_THRESHOLD and abs(delta.x) > abs(delta.y):
+						_switch_car_relative(-1 if delta.x < 0 else 1)
+					_swipe_tracking = false
+		return
+
 	if _focus_mode != FocusMode.DEFAULT:
 		return
 
@@ -295,12 +321,117 @@ func _setup_stage_car_buttons(cars: Array) -> void:
 	for child in stage_car_thumb_list.get_children():
 		child.queue_free()
 
+	# 隐藏水平/垂直滚动条（保留触摸滚动能力）
+	var scroll_container := stage_car_thumb_list.get_parent() as ScrollContainer
+	if scroll_container:
+		scroll_container.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
+		scroll_container.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+
+	# BottomBar：去掉背景 + 向下延伸增加底部间距
+	var bottom_bar := scroll_container.get_parent() as PanelContainer if scroll_container else null
+	if bottom_bar:
+		bottom_bar.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+		bottom_bar.offset_bottom = -6.0  # 原 -24，给底部留 6px 间距，同时让栏高增加 18px
+
+	# 卡片间距
+	stage_car_thumb_list.add_theme_constant_override("separation", 20)
+
+	# 普通状态：深色背景 + 4px 浅白边框（与深色主体形成反差）
+	var normal_style := StyleBoxFlat.new()
+	normal_style.bg_color = Color(0.08, 0.10, 0.16, 0.92)
+	normal_style.border_width_left = 4
+	normal_style.border_width_top = 4
+	normal_style.border_width_right = 4
+	normal_style.border_width_bottom = 4
+	normal_style.border_color = Color(1.0, 1.0, 1.0, 0.55)
+	normal_style.set_corner_radius_all(8)
+
+	# 悬停状态
+	var hover_style := StyleBoxFlat.new()
+	hover_style.bg_color = Color(0.14, 0.18, 0.26, 0.95)
+	hover_style.border_width_left = 4
+	hover_style.border_width_top = 4
+	hover_style.border_width_right = 4
+	hover_style.border_width_bottom = 4
+	hover_style.border_color = Color(1.0, 1.0, 1.0, 0.80)
+	hover_style.set_corner_radius_all(8)
+
+	# 选中状态：青色边框 + 光晕
+	var pressed_style := StyleBoxFlat.new()
+	pressed_style.bg_color = Color(0.05, 0.12, 0.22, 0.95)
+	pressed_style.border_width_left = 4
+	pressed_style.border_width_top = 4
+	pressed_style.border_width_right = 4
+	pressed_style.border_width_bottom = 4
+	pressed_style.border_color = Color(0.0, 0.82, 1.0, 1.0)
+	pressed_style.shadow_color = Color(0.0, 0.65, 1.0, 0.80)
+	pressed_style.shadow_size = 14
+	pressed_style.shadow_offset = Vector2i(0, 0)
+	pressed_style.set_corner_radius_all(8)
+
 	for index in range(cars.size()):
 		var button: Button = Button.new()
 		button.toggle_mode = true
-		button.custom_minimum_size = Vector2(180, 72)
-		button.text = str(cars[index])
+		button.custom_minimum_size = Vector2(200, 112)
+		button.text = ""
 		button.pressed.connect(_on_stage_car_pressed.bind(index))
+		button.add_theme_stylebox_override("normal", normal_style)
+		button.add_theme_stylebox_override("hover", hover_style)
+		button.add_theme_stylebox_override("pressed", pressed_style)
+		button.add_theme_stylebox_override("hover_pressed", pressed_style)
+		button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+
+		# clip_box 内缩 4px（与边框宽度一致），使边框可见
+		var clip_box: Control = Control.new()
+		clip_box.anchor_right = 1.0
+		clip_box.anchor_bottom = 1.0
+		clip_box.offset_left = 4
+		clip_box.offset_top = 4
+		clip_box.offset_right = -4
+		clip_box.offset_bottom = -4
+		clip_box.clip_contents = true
+		clip_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+		# 缩略图填满 clip_box
+		var thumb_rect: TextureRect = TextureRect.new()
+		thumb_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		thumb_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		thumb_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		thumb_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		thumb_rect.texture = _get_car_thumbnail(index)
+
+		# 标题背景条叠在图片底部（不额外占高度）
+		var label_bg: ColorRect = ColorRect.new()
+		label_bg.color = Color(0.0, 0.0, 0.0, 0.68)
+		label_bg.anchor_left = 0.0
+		label_bg.anchor_top = 1.0
+		label_bg.anchor_right = 1.0
+		label_bg.anchor_bottom = 1.0
+		label_bg.offset_top = -26
+		label_bg.offset_bottom = 0
+		label_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+		# 标题文字叠在背景条上
+		var name_label: Label = Label.new()
+		name_label.anchor_left = 0.0
+		name_label.anchor_top = 1.0
+		name_label.anchor_right = 1.0
+		name_label.anchor_bottom = 1.0
+		name_label.offset_top = -26
+		name_label.offset_bottom = 0
+		name_label.text = str(cars[index])
+		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		name_label.add_theme_font_size_override("font_size", 13)
+		name_label.clip_text = true
+		name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+		clip_box.add_child(thumb_rect)
+		clip_box.add_child(label_bg)
+		clip_box.add_child(name_label)
+		button.add_child(clip_box)
+
 		stage_car_thumb_list.add_child(button)
 		_stage_car_buttons.append(button)
 
@@ -385,7 +516,9 @@ func _select_stage_car_button(index: int) -> void:
 	for i in range(_stage_car_buttons.size()):
 		var button: Button = _stage_car_buttons[i]
 		if button:
-			button.set_pressed_no_signal(i == clamped_index)
+			var is_selected: bool = i == clamped_index
+			button.set_pressed_no_signal(is_selected)
+			button.modulate = Color(1.0, 1.0, 1.0, 1.0) if is_selected else Color(0.50, 0.50, 0.50, 0.85)
 
 func _refresh_play_pause_text() -> void:
 	if not play_pause_button:
@@ -976,6 +1109,32 @@ func _set_environment_energy(value: float, sync_slider: bool = true) -> void:
 	var environment: Environment = world_environment.environment
 	environment.ambient_light_energy = clamped_value
 	environment.background_energy_multiplier = clamped_value * (_base_background_energy / _base_environment_energy)
+
+func _get_car_thumbnail(scene_index: int) -> Texture2D:
+	if not car_manager:
+		return null
+	var scenes: Array = car_manager.get("car_scenes") as Array
+	if not scenes or scene_index >= scenes.size():
+		return null
+	var packed: PackedScene = scenes[scene_index] as PackedScene
+	if not packed:
+		return null
+	var scene_path: String = packed.resource_path
+	var base_name: String = scene_path.get_file().get_basename()
+	var thumb_path: String = "res://assets/thumbnails/" + base_name + ".png"
+	if ResourceLoader.exists(thumb_path):
+		return load(thumb_path) as Texture2D
+	return null
+
+func _switch_car_relative(direction: int) -> void:
+	if not car_manager:
+		return
+	var current: int = car_manager.call("get_current_index") as int
+	var count: int = (car_manager.call("get_car_list") as Array).size()
+	if count <= 0:
+		return
+	var next: int = ((current + direction) % count + count) % count
+	_on_car_selected(next)
 
 func _find_item_by_text(selector: OptionButton, value: String) -> int:
 	for i in range(selector.item_count):
