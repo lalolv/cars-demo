@@ -140,7 +140,7 @@ albedo_color = Color(0.78, 0.81, 0.86, 1)
 roughness = 0.66
 
 [sub_resource type="BoxMesh" id="BoxMesh_spec_wall"]
-size = Vector3(28, 3.8, 0.24)
+size = Vector3(3.6, 3.8, 0.24)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_spec_poster"]
 transparency = 1
@@ -156,7 +156,7 @@ albedo_color = Color(0.8, 0.83, 0.88, 1)
 roughness = 0.7
 
 [sub_resource type="BoxMesh" id="BoxMesh_wing_wall"]
-size = Vector3(26, 4.8, 0.22)
+size = Vector3(2.0, 4.8, 0.22)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wing_poster_left"]
 transparency = 1
@@ -535,7 +535,7 @@ material_override = SubResource("StandardMaterial3D_spec_poster")
 mesh = SubResource("QuadMesh_spec_poster")
 
 [node name="LeftWingWall" type="MeshInstance3D" parent="BackScreenRoot" unique_id=2104057178]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -13.69, 2.2, 0)
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -13.69, 2.2, 0)
 material_override = SubResource("StandardMaterial3D_wing_wall")
 mesh = SubResource("BoxMesh_wing_wall")
 
