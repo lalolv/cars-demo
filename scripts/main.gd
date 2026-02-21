@@ -144,6 +144,7 @@ var _dialogue_index: int = 0
 var _dialogue_typing: bool = false
 var _typing_tween: Tween
 var _sweeper_follow_active: bool = false
+var _particle_showcase: Node3D
 
 func _ready() -> void:
 	_cache_nodes()
@@ -157,6 +158,7 @@ func _ready() -> void:
 	_setup_lighting_controls()
 	_refresh_play_pause_text()
 	_set_ui_mode(FocusMode.DEFAULT)
+	_setup_particle_showcase()
 
 func _process(delta: float) -> void:
 	if _focus_mode == FocusMode.SWEEPER:
@@ -242,6 +244,17 @@ func _cache_nodes() -> void:
 	left_wing_poster_panel = get_node_or_null("BackScreenRoot/LeftWingWall/LeftWingPoster") as MeshInstance3D
 	right_wing_poster_panel = get_node_or_null("BackScreenRoot/RightWingWall/RightWingPoster") as MeshInstance3D
 	screen_slideshow = get_node_or_null("BackScreenRoot/ScreenSlideshow")
+
+func _setup_particle_showcase() -> void:
+	var ps_script := load("res://scripts/particle_showcase.gd") as GDScript
+	if not ps_script:
+		push_warning("ParticleShowcase: 脚本加载失败，跳过粒子系统初始化。")
+		return
+	_particle_showcase = Node3D.new()
+	_particle_showcase.set_script(ps_script)
+	_particle_showcase.name = "ParticleShowcase"
+	add_child(_particle_showcase)
+
 
 func _style_guide_dialogue() -> void:
 	var dialogue_box := get_node_or_null("CanvasLayer/MainUI/GuidePanel/DialogueBox") as PanelContainer
@@ -490,6 +503,9 @@ func _on_play_pause_pressed() -> void:
 	_refresh_play_pause_text()
 
 func _on_car_changed(car_name: String) -> void:
+	if _particle_showcase and _particle_showcase.has_method("trigger_car_reveal"):
+		_particle_showcase.call("trigger_car_reveal")
+
 	var cars: Array = []
 	if car_manager and car_manager.has_method("get_car_list"):
 		cars = car_manager.call("get_car_list") as Array
@@ -541,6 +557,8 @@ func _set_ui_mode(mode: int) -> void:
 		guide_panel.visible = mode == FocusMode.GUIDE
 	if back_button:
 		back_button.visible = mode != FocusMode.DEFAULT
+	if _particle_showcase and _particle_showcase.has_method("set_stage_mode"):
+		_particle_showcase.call("set_stage_mode", mode == FocusMode.STAGE)
 
 func _on_back_pressed() -> void:
 	_return_to_default_focus()
